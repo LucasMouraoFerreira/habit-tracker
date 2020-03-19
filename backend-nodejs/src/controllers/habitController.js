@@ -12,7 +12,9 @@ router.get('/', async (req, res) => {
     try {
         const habits = await Habit.find({ user: req.userId });
 
-        return res.send(habits);
+        const userOverallPercentage = setUserOverallPercentage(habits);
+
+        return res.send({ habits, userOverallPercentage });
     } catch (err) {
         return res.status(400).send({ error: 'Error loading habits' });
     }
@@ -23,11 +25,15 @@ router.post('/', async (req, res) => {
     const { name, reminderMessage, color } = req.body;
 
     try {
-        const habit = await Habit.create({ name, reminderMessage, color, user: req.userId });
+
+        const percentageHistory = generateNewPercentageHistory();
+
+        const habit = await Habit.create({ name, reminderMessage, color, percentageHistory, user: req.userId });
 
         return res.send({ habit });
 
     } catch (err) {
+        console.log(err);
         return res.status(400).send({ error: 'Error creating habit' });
     }
 
@@ -62,5 +68,27 @@ router.delete('/:habitId', async (req, res) => {
         return res.status(400).send({ error: 'Error deleting habit' });
     }
 });
+
+function setUserOverallPercentage(habits) {
+    var pe = habits.map(x => (x.currentPercentage));
+    const userOverallPercentage = pe.reduce((a, b) => a + b, 0) / pe.length;
+    return userOverallPercentage;
+}
+
+function generateNewPercentageHistory() { // generate 30 days percentage history
+    var d1 = new Date();
+    d1.setHours(18); d1.setMinutes(0); d1.setSeconds(0); d1.setMilliseconds(0);
+    var milliSenconds = d1.getTime(); // today in milliseconds
+    var historyArray = [];
+    for (let index = 30; index > 0; index--) {
+        var Obj = {
+            date: new Date(milliSenconds - 86400000 * index), //  86.400.000 = 1 day in milliseconds
+            percentage: 0,
+            performed: false,
+        }
+        historyArray.push(Obj);
+    }
+    return historyArray;
+}
 
 module.exports = app => app.use('/habits', router);
