@@ -20,10 +20,10 @@ router.get('/', async (req, res) => {
 
 router.post('/', async (req, res) => {
 
-    const { name, reminderMessage, frequency, color } = req.body;
+    const { name, reminderMessage, color } = req.body;
 
     try {
-        const habit = await Habit.create({ name, reminderMessage, frequency, color, user: req.userId });
+        const habit = await Habit.create({ name, reminderMessage, color, user: req.userId });
 
         return res.send({ habit });
 
@@ -35,10 +35,14 @@ router.post('/', async (req, res) => {
 
 router.put('/:habitId', async (req, res) => {
 
-    const { name, reminderMessage, frequency, color } = req.body;
+    var objForUpdate = {};
+
+    if (req.body.name) objForUpdate.name = req.body.name;
+    if (req.body.reminderMessage) objForUpdate.reminderMessage = req.body.reminderMessage;
+    if (req.body.color) objForUpdate.color = req.body.color;
 
     try {
-        const habit = await Habit.findByIdAndUpdate(req.params.habitId, { name, reminderMessage, frequency, color }, {new : true});
+        const habit = await Habit.findByIdAndUpdate(req.params.habitId, { $set: objForUpdate }, { new: true });
 
         return res.send({ habit });
 
@@ -53,10 +57,10 @@ router.delete('/:habitId', async (req, res) => {
         await Habit.findByIdAndDelete(req.params.habitId);
 
         res.status(204).send();
+
     } catch (err) {
         return res.status(400).send({ error: 'Error deleting habit' });
     }
-    res.send({ user: req.userId });
 });
 
 module.exports = app => app.use('/habits', router);

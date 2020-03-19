@@ -8,15 +8,11 @@ const HabitSchema = new mongoose.Schema({
     reminderMessage: {
         type: String,
         required: true,
+        default: 'Time to practice your habit!',
     },
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        require: true,
-    },
-    frequency: {
-        type: Number,
-        default: 1,
         require: true,
     },
     currentPercentage: {
