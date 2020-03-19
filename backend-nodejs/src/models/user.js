@@ -17,6 +17,13 @@ const UserSchema = new mongoose.Schema({
         required: true,
         select: false,
     },
+    habitsOverallPercentage: {
+        type: Number,
+        minimum : 0,
+        maximum : 100,
+        default: 0,
+        required: true,
+    },    
 });
 
 UserSchema.pre('save', async function (next) {

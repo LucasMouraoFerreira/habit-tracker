@@ -11,7 +11,7 @@ module.exports = (req, res, next) => {
 
     const tokenBody = authHeader.split(' ');
 
-    if (tokenBody.length != 2)
+    if (tokenBody.length !== 2)
         return res.status(401).send({ error: 'Token malformatted' });
 
     const [scheme, token] = tokenBody;

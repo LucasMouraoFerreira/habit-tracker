@@ -6,7 +6,6 @@ const authConfig = require('../config/auth.json')
 
 const User = require('../models/user');
 
-
 const router = express.Router();
 
 function generateToken(params = {}) {
