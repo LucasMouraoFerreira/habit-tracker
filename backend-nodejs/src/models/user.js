@@ -23,13 +23,19 @@ const UserSchema = new mongoose.Schema({
         maximum : 100,
         default: 0,
         required: true,
-    },    
+    },
+    profilePhoto: {
+        name: String,
+        size: Number,
+        key: String,
+        url: String,        
+    }    
 });
 
 UserSchema.pre('save', async function (next) {
     const hash = await bcrypt.hash(this.password, 12);
     this.password = hash;
-
+    
     next();
 });
 

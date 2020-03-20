@@ -1,7 +1,9 @@
 const express = require('express');
 const authMiddleware = require('../middlewares/auth')
 const bcrypt = require('bcryptjs');
+const multer = require('multer');
 
+const multerConfig = require('../config/multer');
 const User = require('../models/user');
 const Habit = require('../models/habit');
 
@@ -42,11 +44,29 @@ router.delete('/', async (req, res) => {
 
         await User.findByIdAndDelete(req.userId);
 
-        res.status(204).send();
+        return res.status(204).send();
 
     } catch (err) {
         return res.status(400).send({ error: 'Error deleting user' });
     }
+});
+
+router.post('/profilephoto', multer(multerConfig).single('file') , async (req, res) => {
+
+    const { originalname, size, filename } = req.file;
+
+    const objForUpdate = {
+        name: originalname,
+        size,
+        key: filename,
+        url : `http://localhost:8080/images/${filename}`,
+    };
+    
+    const user = await User.findByIdAndUpdate(req.userId, { profilePhoto : objForUpdate}, { new: true });
+
+    user.password = undefined;
+    
+    return res.send(user);
 });
 
 module.exports = app => app.use('/users', router);
