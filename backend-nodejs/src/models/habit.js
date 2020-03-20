@@ -27,10 +27,25 @@ const HabitSchema = new mongoose.Schema({
         required: true,
         default: '#009688'
     },
+    maxConsecutiveDaysPerforming: {
+        type: Number,
+        default: 0,
+        required: true,
+    },
+    consecutiveDaysPerforming: {
+        type: Number,
+        default: 0,
+        required: true,
+    },
+    consecutiveDaysNotPerforming: {
+        type: Number,
+        default: 0,
+        required: true,
+    },
     percentageHistory: [{
         date: {
             type: Date,
-            required: true,            
+            required: true,
         },
         percentage: {
             type: Number,

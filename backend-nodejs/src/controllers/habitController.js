@@ -1,7 +1,9 @@
 const express = require('express');
+const async = require('async');
 const authMiddleware = require('../middlewares/auth')
 
 const Habit = require('../models/habit');
+const User = require('../models/user');
 
 const router = express.Router();
 
@@ -12,10 +14,26 @@ router.get('/', async (req, res) => {
     try {
         const habits = await Habit.find({ user: req.userId });
 
-        const userOverallPercentage = setUserOverallPercentage(habits);
+        habits.forEach((element) => {
+            verifyDaysPastSinceLastLogin(element);
+        });
 
-        return res.send({ habits, userOverallPercentage });
+        async.eachSeries(habits, function updateObject (element, done) {
+            Habit.updateOne({ _id: element._id }, {
+                consecutiveDaysNotPerforming: element.consecutiveDaysNotPerforming,
+                consecutiveDaysPerforming: element.consecutiveDaysPerforming,
+                percentageHistory: element.percentageHistory
+            }, done);
+        }, function allDone (er) {
+        });
+        
+        const habitsOverallPercentage = setUserOverallPercentage(habits);
+
+        await User.findByIdAndUpdate(req.userId, { habitsOverallPercentage });
+
+        return res.send({ habits, habitsOverallPercentage });
     } catch (err) {
+        console.log(err);
         return res.status(400).send({ error: 'Error loading habits' });
     }
 });
@@ -69,26 +87,74 @@ router.delete('/:habitId', async (req, res) => {
     }
 });
 
+const _MS_PER_DAY = 1000 * 60 * 60 * 24;
+
 function setUserOverallPercentage(habits) {
     var pe = habits.map(x => (x.currentPercentage));
     const userOverallPercentage = pe.reduce((a, b) => a + b, 0) / pe.length;
     return userOverallPercentage;
 }
 
+function lookForChangesInPercentageHistory(habits) {
+    habits.array.forEach((element) => {
+        verifyDaysPastSinceLastLogin(element);
+    });
+}
+
+function verifyDaysPastSinceLastLogin(habit) {
+    var d1 = new Date();
+    var milliSenconds = d1.getTime();
+    var diff = dateDiffInDays(habit.percentageHistory[29].date, d1);
+    if (diff > 1) {
+        habit.consecutiveDaysPerforming = 0;
+        for (let index = 0; index < (diff - 1); index++) {
+            habit.percentageHistory.shift();
+            habit.consecutiveDaysNotPerforming++;
+            var Obj = {
+                date: new Date(milliSenconds - (_MS_PER_DAY * (diff - 1 - index))),
+                percentage: calculateLoss(habit),
+                performed: false,
+            }
+            habit.percentageHistory.push(Obj);
+        }
+    }
+}
+
 function generateNewPercentageHistory() { // generate 30 days percentage history
     var d1 = new Date();
-    d1.setHours(18); d1.setMinutes(0); d1.setSeconds(0); d1.setMilliseconds(0);
-    var milliSenconds = d1.getTime(); // today in milliseconds
-    var historyArray = [];
+    var milliSenconds = d1.getTime();
+    var percentageHistory = [];
     for (let index = 30; index > 0; index--) {
         var Obj = {
-            date: new Date(milliSenconds - 86400000 * index), //  86.400.000 = 1 day in milliseconds
-            percentage: 0,
+            date: new Date(milliSenconds - (_MS_PER_DAY * index)),
+            percentage: 50,
             performed: false,
         }
-        historyArray.push(Obj);
+        percentageHistory.push(Obj);
     }
-    return historyArray;
+    return percentageHistory;
+}
+
+function calculateLoss(habit) {
+    var daysNotP = habit.consecutiveDaysNotPerforming;
+
+    var baseLossPercentage = (100 - (habit.maxConsecutiveDaysPerforming * 5));
+    if (baseLossPercentage < 1) {
+        baseLossPercentage = 1;
+    }
+    var newPercentage = (habit.currentPercentage - (daysNotP * baseLossPercentage));
+    if (newPercentage < 0) {
+        newPercentage = 0;
+    }
+    return newPercentage;
+}
+
+function dateDiffInDays(a, b) {
+    // Discard the time and time-zone information.
+    const utc1 = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
+    const utc2 = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate());
+
+    return Math.floor((utc2 - utc1) / _MS_PER_DAY);
 }
 
 module.exports = app => app.use('/habits', router);
