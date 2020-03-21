@@ -31,7 +31,7 @@ router.put('/', async (req, res) => {
 
         user.password = undefined;
 
-        return res.send({ user });
+        return res.send(user);
 
     } catch (err) {
         return res.status(400).send({ error: 'Error updating user' });
@@ -45,6 +45,11 @@ router.delete('/', async (req, res) => {
 
         await Habit.deleteMany({ user: req.userId }); // delete all habits associated with this user
 
+        const photoKey = await User.findById(req.userId);
+
+        if (photoKey.profilePhoto.key)
+            promisify(fs.unlink)(path.resolve(__dirname, '..', '..', 'tmp', 'uploads', photoKey.profilePhoto.key));
+
         await User.findByIdAndDelete(req.userId);
 
         return res.status(204).send();
@@ -54,7 +59,7 @@ router.delete('/', async (req, res) => {
     }
 });
 
-router.post('/profilephoto', multer(multerConfig).single('file'), async (req, res) => {
+router.put('/profilephoto', multer(multerConfig).single('file'), async (req, res) => {
 
     try {
         const { originalname, size, filename } = req.file;
@@ -65,6 +70,11 @@ router.post('/profilephoto', multer(multerConfig).single('file'), async (req, re
             key: filename,
             url: `http://localhost:8080/images/${filename}`,
         };
+
+        const photoKey = await User.findById(req.userId);
+
+        if (photoKey.profilePhoto.key)
+            promisify(fs.unlink)(path.resolve(__dirname, '..', '..', 'tmp', 'uploads', photoKey.profilePhoto.key));
 
         const user = await User.findByIdAndUpdate(req.userId, { profilePhoto: objForUpdate }, { new: true });
 
@@ -102,5 +112,6 @@ router.delete('/profilephoto', async (req, res) => {
         return res.status(400).send({ error: 'Error deleting profile photo' });
     }
 });
+
 
 module.exports = app => app.use('/users', router);

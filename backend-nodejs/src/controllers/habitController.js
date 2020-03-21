@@ -187,8 +187,8 @@ function generateNewPercentageHistory() { // generate 30 days percentage history
     var percentageHistory = [];
     for (let index = 30; index > 0; index--) {
         var Obj = {
-            date: new Date(todayInMilliSenconds - (_MS_PER_DAY * (index + 5))),
-            percentage: 50,
+            date: new Date(todayInMilliSenconds - (_MS_PER_DAY * index)),
+            percentage: 0,
             performed: false,
         }
         percentageHistory.push(Obj);
