@@ -2,6 +2,9 @@ const express = require('express');
 const authMiddleware = require('../middlewares/auth')
 const bcrypt = require('bcryptjs');
 const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
+const { promisify } = require('util');
 
 const multerConfig = require('../config/multer');
 const User = require('../models/user');
@@ -39,8 +42,8 @@ router.put('/', async (req, res) => {
 
 router.delete('/', async (req, res) => {
     try {
-        
-        await Habit.deleteMany({user: req.userId}); // delete all habits associated with this user
+
+        await Habit.deleteMany({ user: req.userId }); // delete all habits associated with this user
 
         await User.findByIdAndDelete(req.userId);
 
@@ -51,22 +54,53 @@ router.delete('/', async (req, res) => {
     }
 });
 
-router.post('/profilephoto', multer(multerConfig).single('file') , async (req, res) => {
+router.post('/profilephoto', multer(multerConfig).single('file'), async (req, res) => {
 
-    const { originalname, size, filename } = req.file;
+    try {
+        const { originalname, size, filename } = req.file;
 
-    const objForUpdate = {
-        name: originalname,
-        size,
-        key: filename,
-        url : `http://localhost:8080/images/${filename}`,
-    };
-    
-    const user = await User.findByIdAndUpdate(req.userId, { profilePhoto : objForUpdate}, { new: true });
+        const objForUpdate = {
+            name: originalname,
+            size,
+            key: filename,
+            url: `http://localhost:8080/images/${filename}`,
+        };
 
-    user.password = undefined;
-    
-    return res.send(user);
+        const user = await User.findByIdAndUpdate(req.userId, { profilePhoto: objForUpdate }, { new: true });
+
+        user.password = undefined;
+
+        return res.send(user);
+    } catch (err) {
+        return res.status(400).send({ error: 'Error uploading profile photo' });
+    }
+});
+
+router.delete('/profilephoto', async (req, res) => {
+
+    try {
+        const photoKey = await User.findById(req.userId);
+
+        if (!photoKey.profilePhoto.key)
+            return res.status(400).send({ error: 'Profile photo not found' });
+
+        const objForUpdate = {
+            name: "",
+            size: "",
+            key: "",
+            url: "",
+        };
+
+        const user = await User.findByIdAndUpdate(req.userId, { profilePhoto: objForUpdate }, { new: true });
+
+        promisify(fs.unlink)(path.resolve(__dirname, '..', '..', 'tmp', 'uploads', photoKey.profilePhoto.key));
+
+        user.password = undefined;
+
+        return res.send(user);
+    } catch (err) {
+        return res.status(400).send({ error: 'Error deleting profile photo' });
+    }
 });
 
 module.exports = app => app.use('/users', router);
