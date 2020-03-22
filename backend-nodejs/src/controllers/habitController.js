@@ -1,7 +1,6 @@
 const express = require('express');
 const async = require('async');
 const authMiddleware = require('../middlewares/auth')
-
 const Habit = require('../models/habit');
 const User = require('../models/user');
 

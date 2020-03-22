@@ -25,6 +25,7 @@ module.exports = (req, res, next) => {
             return res.status(401).send({error:'Invalid token'});
 
         req.userId = decoded.id;
+        res.header("Access-Control-Allow-Origin", "*");
         return next();
     });
 };

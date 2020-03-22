@@ -8,34 +8,63 @@
       </div>
     </div>
     <!--End Landing Page Image-->
+
     <div class="form-style">
       <div class="card">
         <div class="card-body">
           <div class="text-center theme-color mb-2">
-            <img src="../assets/habit-logo.png" alt="Brand"/>
+            <img src="../assets/habit-logo.png" alt="Brand" />
             <h4>Habits</h4>
           </div>
-          <div class="form-group">
-            <input type="email" class="form-control theme-color" placeholder="Email" />
-          </div>
-          <div class="form-group">
-            <input type="password" class="form-control" placeholder="Password" />
-          </div>
-          <button class="btn btn-outline-light btn-md w-100">Login</button>    
-          <h6 class="theme-color mt-2">Doesn't have an account?</h6>        
+          <form @submit.prevent="submit()">
+            <div class="form-group">
+              <input
+                required
+                type="email"
+                class="form-control theme-color"
+                placeholder="Email"
+                v-model="loginForm.email"
+              />
+            </div>
+            <div class="form-group">
+              <input
+                required
+                type="password"
+                class="form-control"
+                placeholder="Password"
+                v-model="loginForm.password"
+              />
+            </div>
+            <button class="btn btn-outline-light btn-md w-100">Login</button>
+          </form>
+          <h6 class="theme-color mt-2">Don't have an account yet?</h6>
           <button class="btn btn-outline-light btn-sm mt-1">Register</button>
         </div>
       </div>
     </div>
-
   </div>
 </template>
 
 <script>
 // @ is an alias to /src
+import {mapActions} from 'vuex'
 export default {
   name: "Home",
-  components: {}
+  components: {},
+  data: () => ({
+    loginForm: {
+      email: "",
+      password: ""
+    }
+  }),
+  methods: {
+    ...mapActions(['ActionDoLogin']),
+    submit() {
+      this.ActionDoLogin(this.loginForm).then(res => {
+        console.log(res.body)
+      });
+    }
+  }
 };
 </script>
 
@@ -43,14 +72,12 @@ export default {
 
 
 <style scoped>
-
 /*==Landing page==*/
 .landing {
   position: relative;
   width: 100%;
   height: 100vh;
   display: table;
-  
 }
 
 .home-wrap {
@@ -58,7 +85,7 @@ export default {
   height: 100%;
   widows: 100%;
   top: 0;
-  left: 0;  
+  left: 0;
 }
 
 .home-inner {
@@ -109,14 +136,16 @@ a.btn {
   transition: all 0.6s ease;
 }
 
-.home .btn-md, .btn-sm{
+.home .btn-md,
+.btn-sm {
   border-color: #ba1a67;
   border-width: small;
   color: #ba1a67;
   background-color: white;
 }
 
-.home .btn-md:hover, .btn-sm:hover{
+.home .btn-md:hover,
+.btn-sm:hover {
   color: white;
   background-color: #ba1a67;
 }
@@ -129,10 +158,11 @@ a.btn {
 .card img {
   height: 60px;
 }
+
 .form-style {
   z-index: 1;
   position: absolute;
-  top: 38%;
+  top: 35%;
   left: 35%;
   width: 100%;
   max-width: 100%;
