@@ -15,6 +15,19 @@ const router = express.Router();
 
 router.use(authMiddleware);
 
+router.get('/loadsession', async (req, res) => {
+    try{
+        const user = await User.findById(req.userId).select('name').select('email').select('profilePhoto').select('habitsOverallPercentage');
+
+        user.password = undefined;
+
+        return res.send(user);
+
+    } catch (err) {
+        return res.status(400).send({ error: 'Error loading session' });
+    }
+    
+});
 
 router.put('/', async (req, res) => {
 

@@ -59,17 +59,18 @@ export default {
   }),
   methods: {
     ...mapActions(['ActionDoLogin']),
-    submit() {
-      this.ActionDoLogin(this.loginForm).then(res => {
-        console.log(res.body)
-      });
+    async submit() {
+      try{
+        await this.ActionDoLogin(this.loginForm)
+
+        this.$router.push({name: 'Habits'})
+      } catch (err){
+        alert(err.body.error ? err.body.error : 'Unexpected Error')
+      }
     }
   }
 };
 </script>
-
-
-
 
 <style scoped>
 /*==Landing page==*/

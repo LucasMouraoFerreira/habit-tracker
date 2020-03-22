@@ -25,10 +25,22 @@ const UserSchema = new mongoose.Schema({
         required: true,
     },
     profilePhoto: {
-        name: String,
-        size: Number,
-        key: String,
-        url: String,        
+        name: {
+            type: String,
+            default: 'default-user'
+        },
+        size: {
+            size: Number,
+            default: 0,
+        },
+        key: {
+            type: String,
+            default: 'default-user'
+        },
+        url: {
+            type: String,
+            default: 'http://localhost:8080/images/default-user.jpg'
+        }        
     }    
 });
 

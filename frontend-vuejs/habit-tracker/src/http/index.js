@@ -1,19 +1,19 @@
 import Vue from 'vue'
 import VueResource from 'vue-resource'
 import services from './services'
+import interceptors from './interceptors'
 
 Vue.use(VueResource)
 
 const http = Vue.http
 
-//http.options.root = 'http://localhost:8080/'
+const resource = Vue.resource('', {}, services)
 
-/*Object.keys(services).map(service => {
-    services[service] = Vue.resource('', {}, services[service])
-})*/
+http.interceptors.push(interceptors);
 
-const resource = Vue.resource('', {}, services);
+const setBearerToken = token => {
+    http.headers.common['Authorization'] = `Bearer ${token}`
+}
 
-
-export { http }
 export default resource
+export { http , setBearerToken }
