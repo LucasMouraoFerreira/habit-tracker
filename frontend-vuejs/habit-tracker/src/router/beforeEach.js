@@ -17,7 +17,7 @@ export default async (to, from, next) => {
         } else if (to.name === 'Home' && !store.state.token) {
             try {
                 await store.dispatch('ActionCheckToken');
-    
+              
                 next({ name: 'Habits' });
             } catch{
                 next();

@@ -21,7 +21,7 @@ router.get('/loadsession', async (req, res) => {
 
         user.password = undefined;
 
-        return res.send(user);
+        return res.send({user});
 
     } catch (err) {
         return res.status(400).send({ error: 'Error loading session' });

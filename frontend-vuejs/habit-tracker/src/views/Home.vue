@@ -16,7 +16,8 @@
             <img src="../assets/habit-logo.png" alt="Brand" />
             <h4>Habits</h4>
           </div>
-          <form @submit.prevent="submit()">
+          <div v-if="!register">
+            <form @submit.prevent="submitLogin()">
             <div class="form-group">
               <input
                 required
@@ -38,7 +39,42 @@
             <button class="btn btn-outline-light btn-md w-100">Login</button>
           </form>
           <h6 class="theme-color mt-2">Don't have an account yet?</h6>
-          <button class="btn btn-outline-light btn-sm mt-1">Register</button>
+          <button v-on:click="register = !register" class="btn btn-outline-light btn-sm mt-1">Register</button>
+          </div>      
+          <div v-else>
+            <form @submit.prevent="submitRegister()">
+            <div class="form-group">
+              <input
+                required
+                type="email"
+                class="form-control theme-color"
+                placeholder="Email"
+                v-model="registerForm.email"
+              />
+            </div>
+            <div class="form-group">
+              <input
+                required
+                type="password"
+                class="form-control"
+                placeholder="Password"
+                v-model="registerForm.password"
+              />
+            </div>
+            <div class="form-group">
+              <input
+                required
+                type="name"
+                class="form-control"
+                placeholder="Name"
+                v-model="registerForm.name"
+              />
+            </div>
+            <button class="btn btn-outline-light btn-md w-100">Register</button>
+          </form>
+          <h6 class="theme-color mt-2">Already have an account?</h6>
+          <button v-on:click="register = !register" class="btn btn-outline-light btn-sm mt-1">Sign In</button>
+          </div>      
         </div>
       </div>
     </div>
@@ -47,27 +83,43 @@
 
 <script>
 // @ is an alias to /src
+//import Vue from 'vue'
 import {mapActions} from 'vuex'
 export default {
   name: "Home",
   components: {},
   data: () => ({
+    register: false,
     loginForm: {
       email: "",
       password: ""
-    }
+    },
+    registerForm: {
+      email: "",
+      password: "",
+      name: ""
+    },
   }),
   methods: {
-    ...mapActions(['ActionDoLogin']),
-    async submit() {
+    ...mapActions(['ActionDoLogin','ActionRegister']),
+    async submitLogin() {
       try{
         await this.ActionDoLogin(this.loginForm)
+       
+        this.$router.push({name: 'Habits'})
+      } catch (err){
+        alert(err.body.error ? err.body.error : 'Unexpected Error')
+      }
+    },
+    async submitRegister() {
+      try{
+        await this.ActionRegister(this.registerForm)
 
         this.$router.push({name: 'Habits'})
       } catch (err){
         alert(err.body.error ? err.body.error : 'Unexpected Error')
       }
-    }
+    },
   }
 };
 </script>
@@ -110,12 +162,15 @@ export default {
 
 input[type="email"]::placeholder,
 input[type="password"]::placeholder,
+input[type="name"]::placeholder,
+input[type="name"],
 input[type="email"],
 input[type="password"] {
   color: #ba1a67;
 }
 
 input[type="email"],
+input[type="name"],
 input[type="password"],
 textarea {
   outline: none;
@@ -163,7 +218,7 @@ a.btn {
 .form-style {
   z-index: 1;
   position: absolute;
-  top: 35%;
+  top: 30%;
   left: 35%;
   width: 100%;
   max-width: 100%;

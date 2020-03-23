@@ -9,7 +9,7 @@ export default new Vuex.Store({
   state: {
     user: {},
     token: ''
-  },  
+  },
   mutations: {
     setUser(state, payload) {
       state.user = payload;
@@ -37,26 +37,22 @@ export default new Vuex.Store({
       if (!storageToken) {
         return Promise.reject(new Error('Invalid Token'));
       }
-
-      dispatch('ActionSetToken', storageToken);
-      return dispatch('ActionLoadSession');
+      
+      dispatch('ActionSetToken', storageToken);      
     },
     ActionLoadSession({ dispatch }) {
-      return ( async (resolve, reject) => {
-        try {
-          const { data: { user } } = await resource.loadsession();
-
-          dispatch('ActionSetUser', user);
-
-          resolve();
-        } catch (err) {
-          dispatch('ActionSignOut');
-          reject(err);
-        }
+     resource.loadsession().then(res => {
+        dispatch('ActionSetUser', res.body.user);        
       })
     },
     ActionDoLogin({ dispatch }, payload) {
       return resource.login(payload).then(res => {
+        dispatch('ActionSetUser', res.body.user)
+        dispatch('ActionSetToken', res.body.token)
+      })
+    },
+    ActionRegister({ dispatch }, payload) {
+      return resource.register(payload).then(res => {
         dispatch('ActionSetUser', res.body.user)
         dispatch('ActionSetToken', res.body.token)
       })
