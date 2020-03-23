@@ -106,7 +106,7 @@ export default {
       try{
         await this.ActionDoLogin(this.loginForm)
        
-        this.$router.push({name: 'Habits'})
+        await this.$router.push({name: 'Habits'})
       } catch (err){
         alert(err.body.error ? err.body.error : 'Unexpected Error')
       }
@@ -115,7 +115,7 @@ export default {
       try{
         await this.ActionRegister(this.registerForm)
 
-        this.$router.push({name: 'Habits'})
+        await this.$router.push({name: 'Habits'})
       } catch (err){
         alert(err.body.error ? err.body.error : 'Unexpected Error')
       }

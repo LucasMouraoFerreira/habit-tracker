@@ -7,7 +7,7 @@
       </b-navbar-brand>
       <b-navbar-nav class="ml-auto">
         <b-nav-form>
-          <button class="btn btn-outline-light btn-sm">Sign Out</button>
+          <button v-on:click="submitLogin" class="btn btn-outline-light btn-sm">Sign Out</button>
         </b-nav-form>
       </b-navbar-nav>
     </b-navbar>
@@ -44,8 +44,29 @@
 </template>
 
 <script>
-export default {};
+// @ is an alias to /src
+//import Vue from 'vue'
+import {mapActions} from 'vuex'
+export default {
+  name: "Habits",
+  components: {},
+  data: () => ({
+   
+  }),
+  methods: {
+    ...mapActions(['ActionSignOut']),
+    async submitLogin() {
+      try{
+        await this.ActionSignOut();        
+        await this.$router.push({ name: 'Home'});
+      } catch (err){
+        console.log(err)
+      }
+    },
+  }
+};
 </script>
+
 
 <style>
 body {

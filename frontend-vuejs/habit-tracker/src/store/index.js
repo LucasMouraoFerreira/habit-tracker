@@ -61,7 +61,7 @@ export default new Vuex.Store({
       storage.setHeaderToken('');
       storage.deleteLocalToken();
       dispatch('ActionSetUser', {});
-      dispatch('ActionSetUser', '');
+      dispatch('ActionSetUser', '');      
     }
   }
 })

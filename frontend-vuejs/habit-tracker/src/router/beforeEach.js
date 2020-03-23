@@ -22,8 +22,6 @@ export default async (to, from, next) => {
             } catch{
                 next();
             }
-        } else {
-            next();
         }
     }
 

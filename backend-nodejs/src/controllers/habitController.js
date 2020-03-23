@@ -19,9 +19,11 @@ router.get('/', async (req, res) => {
 
         const habitsOverallPercentage = setUserOverallPercentage(habits);
 
-        await User.findByIdAndUpdate(req.userId, { habitsOverallPercentage });
+        const user = await User.findByIdAndUpdate(req.userId, { habitsOverallPercentage }, { new: true });
 
-        return res.send({ habits, habitsOverallPercentage });
+        user.password = undefined;
+
+        return res.send({ habits, user });
 
     } catch (err) {
         console.log(err);
