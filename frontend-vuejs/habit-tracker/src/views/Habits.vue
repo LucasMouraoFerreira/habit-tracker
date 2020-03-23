@@ -22,6 +22,7 @@
               </div>
             </div>
           </div>
+          <button v-on:click="test" class="btn btn-outline-light btn-sm">test</button>
         </b-col>
 
         <b-col md="6">
@@ -30,7 +31,6 @@
               <li class="list-group-item mb-2 rounded-lg">Habit</li>
               <li class="list-group-item mb-2 rounded-lg">Habit</li>
               <li class="list-group-item mb-2 rounded-lg">Habit</li>
-              
             </ul>
           </div>
         </b-col>
@@ -46,23 +46,33 @@
 <script>
 // @ is an alias to /src
 //import Vue from 'vue'
-import {mapActions} from 'vuex'
+import { mapActions } from "vuex";
+import resource from "../http";
 export default {
   name: "Habits",
   components: {},
-  data: () => ({
-   
-  }),
+  data: () => ({}),
+  mounted() {},
   methods: {
-    ...mapActions(['ActionSignOut']),
+    ...mapActions(["ActionSignOut", "ActionLoadSession"]),
     async submitLogin() {
-      try{
-        await this.ActionSignOut();        
-        await this.$router.push({ name: 'Home'});
-      } catch (err){
-        console.log(err)
+      try {
+        await this.ActionSignOut();
+        await this.$router.push({ name: "Home" });
+      } catch (err) {
+        console.log(err);
       }
     },
+    async test() {
+      try {
+        await resource.getAllHabits().then(res => {
+          console.log(res.body);
+        });
+      } catch (err) {
+        console.log(err)
+        alert(err.body.error ? err.body.error : 'Unexpected Error')
+      }
+    }
   }
 };
 </script>

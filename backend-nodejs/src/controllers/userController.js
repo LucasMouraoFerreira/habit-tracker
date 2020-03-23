@@ -1,11 +1,12 @@
 const express = require('express');
-const authMiddleware = require('../middlewares/auth')
+//const authMiddleware = require('../middlewares/auth')
 const bcrypt = require('bcryptjs');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 const { promisify } = require('util');
-
+const authConfig = require('../config/auth.json');
+const jwt = require('jsonwebtoken');
 
 const multerConfig = require('../config/multer');
 const User = require('../models/user');
@@ -13,25 +14,23 @@ const Habit = require('../models/habit');
 
 const router = express.Router();
 
-router.use(authMiddleware);
-
-router.get('/loadsession', async (req, res) => {
-    try{
-        const user = await User.findById(req.userId).select('name').select('email').select('profilePhoto').select('habitsOverallPercentage');
-
-        user.password = undefined;
-
-        return res.send({user});
-
-    } catch (err) {
-        return res.status(400).send({ error: 'Error loading session' });
-    }
-    
-});
+//router.use(authMiddleware);
 
 router.put('/', async (req, res) => {
 
     try {
+        /////Sorry for this code, but CORS made me do it -> right implementation uses /router.use(authMiddleware)/;
+        var userId;
+        const tokenBody = req.headers.authorization.split(' ');
+        const [scheme, token] = tokenBody;
+        jwt.verify(token, authConfig.secret, (err, decoded) => {
+            if (err) {
+                res.status(401).send({ error: 'Invalid token' });
+            }
+            userId = decoded.id;
+        })
+        ///////
+
         var objForUpdate = {};
 
         if (req.body.name) objForUpdate.name = req.body.name;
@@ -41,7 +40,7 @@ router.put('/', async (req, res) => {
             objForUpdate.password = hash;
         }
 
-        const user = await User.findByIdAndUpdate(req.userId, { $set: objForUpdate }, { new: true });
+        const user = await User.findByIdAndUpdate(userId, { $set: objForUpdate }, { new: true });
 
         user.password = undefined;
 
@@ -57,14 +56,26 @@ router.put('/', async (req, res) => {
 router.delete('/', async (req, res) => {
     try {
 
-        await Habit.deleteMany({ user: req.userId }); // delete all habits associated with this user
+        /////Sorry for this code, but CORS made me do it -> right implementation uses /router.use(authMiddleware)/;
+        var userId;
+        const tokenBody = req.headers.authorization.split(' ');
+        const [scheme, token] = tokenBody;
+        jwt.verify(token, authConfig.secret, (err, decoded) => {
+            if (err) {
+                res.status(401).send({ error: 'Invalid token' });
+            }
+            userId = decoded.id;
+        })
+        ///////
 
-        const photoKey = await User.findById(req.userId);
+        await Habit.deleteMany({ user: userId }); // delete all habits associated with this user
+
+        const photoKey = await User.findById(userId);
 
         if (photoKey.profilePhoto.key)
             promisify(fs.unlink)(path.resolve(__dirname, '..', '..', 'tmp', 'uploads', photoKey.profilePhoto.key));
 
-        await User.findByIdAndDelete(req.userId);
+        await User.findByIdAndDelete(userId);
 
         return res.status(204).send();
 
@@ -76,6 +87,18 @@ router.delete('/', async (req, res) => {
 router.put('/profilephoto', multer(multerConfig).single('file'), async (req, res) => {
 
     try {
+        /////Sorry for this code, but CORS made me do it -> right implementation uses /router.use(authMiddleware)/;
+        var userId;
+        const tokenBody = req.headers.authorization.split(' ');
+        const [scheme, token] = tokenBody;
+        jwt.verify(token, authConfig.secret, (err, decoded) => {
+            if (err) {
+                res.status(401).send({ error: 'Invalid token' });
+            }
+            userId = decoded.id;
+        })
+        ///////
+
         const { originalname, size, filename } = req.file;
 
         const objForUpdate = {
@@ -85,12 +108,12 @@ router.put('/profilephoto', multer(multerConfig).single('file'), async (req, res
             url: `http://localhost:8080/images/${filename}`,
         };
 
-        const photoKey = await User.findById(req.userId);
+        const photoKey = await User.findById(userId);
 
         if (photoKey.profilePhoto.key)
             promisify(fs.unlink)(path.resolve(__dirname, '..', '..', 'tmp', 'uploads', photoKey.profilePhoto.key));
 
-        const user = await User.findByIdAndUpdate(req.userId, { profilePhoto: objForUpdate }, { new: true });
+        const user = await User.findByIdAndUpdate(userId, { profilePhoto: objForUpdate }, { new: true });
 
         user.password = undefined;
 
@@ -103,7 +126,19 @@ router.put('/profilephoto', multer(multerConfig).single('file'), async (req, res
 router.delete('/profilephoto', async (req, res) => {
 
     try {
-        const photoKey = await User.findById(req.userId);
+        /////Sorry for this code, but CORS made me do it -> right implementation uses /router.use(authMiddleware)/;
+        var userId;
+        const tokenBody = req.headers.authorization.split(' ');
+        const [scheme, token] = tokenBody;
+        jwt.verify(token, authConfig.secret, (err, decoded) => {
+            if (err) {
+                res.status(401).send({ error: 'Invalid token' });
+            }
+            userId = decoded.id;
+        })
+        ///////
+
+        const photoKey = await User.findById(userId);
 
         if (!photoKey.profilePhoto.key)
             return res.status(400).send({ error: 'Profile photo not found' });
@@ -115,7 +150,7 @@ router.delete('/profilephoto', async (req, res) => {
             url: "",
         };
 
-        const user = await User.findByIdAndUpdate(req.userId, { profilePhoto: objForUpdate }, { new: true });
+        const user = await User.findByIdAndUpdate(userId, { profilePhoto: objForUpdate }, { new: true });
 
         promisify(fs.unlink)(path.resolve(__dirname, '..', '..', 'tmp', 'uploads', photoKey.profilePhoto.key));
 

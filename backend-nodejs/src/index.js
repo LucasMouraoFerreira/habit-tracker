@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const app = express();
 
-const cors = require('../src/middlewares/CORSpolicy');
+const cors = require('./middlewares/CORSpolicy');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended : false}));

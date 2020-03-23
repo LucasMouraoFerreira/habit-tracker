@@ -1,17 +1,31 @@
 const express = require('express');
 const async = require('async');
-const authMiddleware = require('../middlewares/auth')
+//const authMiddleware = require('../middlewares/auth')
 const Habit = require('../models/habit');
 const User = require('../models/user');
+const authConfig = require('../config/auth.json');
+const jwt = require('jsonwebtoken');
 
 const router = express.Router();
 
-router.use(authMiddleware);
+//router.use(authMiddleware);
 
 router.get('/', async (req, res) => {
 
     try {
-        const habits = await Habit.find({ user: req.userId });
+        /////Sorry for this code, but CORS made me do it -> right implementation uses /router.use(authMiddleware)/;
+        var userId;
+        const tokenBody = req.headers.authorization.split(' ');
+        const [scheme, token] = tokenBody;
+        jwt.verify(token, authConfig.secret, (err, decoded) => {
+            if (err) {
+                res.status(401).send({ error: 'Invalid token' });
+            }
+            userId = decoded.id;
+        })
+        ///////
+
+        const habits = await Habit.find({ user: userId });
 
         lookForChangesInPercentageHistory(habits);
 
@@ -19,7 +33,7 @@ router.get('/', async (req, res) => {
 
         const habitsOverallPercentage = setUserOverallPercentage(habits);
 
-        const user = await User.findByIdAndUpdate(req.userId, { habitsOverallPercentage }, { new: true });
+        const user = await User.findByIdAndUpdate(userId, { habitsOverallPercentage }, { new: true });
 
         user.password = undefined;
 
@@ -36,11 +50,23 @@ router.post('/', async (req, res) => {
     const { name, reminderMessage, color } = req.body;
 
     try {
+        /////Sorry for this code, but CORS made me do it -> right implementation uses /router.use(authMiddleware)/;
+        var userId;
+        const tokenBody = req.headers.authorization.split(' ');
+        const [scheme, token] = tokenBody;
+        jwt.verify(token, authConfig.secret, (err, decoded) => {
+            if (err) {
+                res.status(401).send({ error: 'Invalid token' });
+            }
+            userId = decoded.id;
+        })
+        ///////
+
         const percentageHistory = generateNewPercentageHistory();
 
-        const habit = await Habit.create({ name, reminderMessage, color, percentageHistory, user: req.userId });
+        const habit = await Habit.create({ name, reminderMessage, color, percentageHistory, user: userId });
 
-        const habitsOverallPercentage = await FindHabitsSetUserOverallPercentageAndUpdate(req.userId);
+        const habitsOverallPercentage = await FindHabitsSetUserOverallPercentageAndUpdate(userId);
 
         return res.send({ habit, habitsOverallPercentage });
 
@@ -60,6 +86,16 @@ router.put('/:habitId', async (req, res) => {
     if (req.body.color) objForUpdate.color = req.body.color;
 
     try {
+        /////Sorry for this code, but CORS made me do it -> right implementation uses /router.use(authMiddleware)/;
+        const tokenBody = req.headers.authorization.split(' ');
+        const [scheme, token] = tokenBody;
+        jwt.verify(token, authConfig.secret, (err, decoded) => {
+            if (err) {
+                res.status(401).send({ error: 'Invalid token' });
+            }                   
+        })
+        ///////
+
         const habit = await Habit.findByIdAndUpdate(req.params.habitId, { $set: objForUpdate }, { new: true });
 
         return res.send({ habit });
@@ -73,9 +109,21 @@ router.put('/:habitId', async (req, res) => {
 router.delete('/:habitId', async (req, res) => {
 
     try {
+        /////Sorry for this code, but CORS made me do it -> right implementation uses /router.use(authMiddleware)/;
+        var userId;
+        const tokenBody = req.headers.authorization.split(' ');
+        const [scheme, token] = tokenBody;
+        jwt.verify(token, authConfig.secret, (err, decoded) => {
+            if (err) {
+                res.status(401).send({ error: 'Invalid token' });
+            }
+            userId = decoded.id;
+        })
+        ///////
+
         await Habit.findByIdAndDelete(req.params.habitId);
 
-        const habitsOverallPercentage = await FindHabitsSetUserOverallPercentageAndUpdate(req.userId);
+        const habitsOverallPercentage = await FindHabitsSetUserOverallPercentageAndUpdate(userId);
 
         return res.send({ habitsOverallPercentage });
 
@@ -87,17 +135,30 @@ router.delete('/:habitId', async (req, res) => {
 router.post('/habitperformed/:habitId', async (req, res) => {
 
     try {
+
+        /////Sorry for this code, but CORS made me do it -> right implementation uses /router.use(authMiddleware)/;
+        var userId;
+        const tokenBody = req.headers.authorization.split(' ');
+        const [scheme, token] = tokenBody;
+        jwt.verify(token, authConfig.secret, (err, decoded) => {
+            if (err) {
+                res.status(401).send({ error: 'Invalid token' });
+            }
+            userId = decoded.id;
+        })
+        ///////
+
         const habit = await Habit.findById(req.params.habitId);
 
         // percentage history is supposed to have yesterday as the last day stored
-        if (dateDiffInDays(habit.percentageHistory[29].date, new Date()) !== 1) 
+        if (dateDiffInDays(habit.percentageHistory[29].date, new Date()) !== 1)
             return res.status(400).send({ error: 'Unexpected Error' });
 
         performHabit(habit);
 
         await Habit.updateOne({ _id: habit._id }, habit);
 
-        const habitsOverallPercentage = await FindHabitsSetUserOverallPercentageAndUpdate(req.userId);
+        const habitsOverallPercentage = await FindHabitsSetUserOverallPercentageAndUpdate(userId);
 
         return res.send({ habit, habitsOverallPercentage });
 
@@ -113,7 +174,7 @@ async function FindHabitsSetUserOverallPercentageAndUpdate(userId) {
     var habitsOverallPercentage;
     if (habits.length > 0) {
         habitsOverallPercentage = setUserOverallPercentage(habits);
-        await User.updateOne({_id : userId}, { habitsOverallPercentage }, { new: true });
+        await User.updateOne({ _id: userId }, { habitsOverallPercentage }, { new: true });
         return habitsOverallPercentage;
     }
     return 0;

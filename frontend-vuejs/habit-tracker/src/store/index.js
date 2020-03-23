@@ -40,11 +40,6 @@ export default new Vuex.Store({
       
       dispatch('ActionSetToken', storageToken);      
     },
-    ActionLoadSession({ dispatch }) {
-     resource.loadsession().then(res => {
-        dispatch('ActionSetUser', res.body.user);        
-      })
-    },
     ActionDoLogin({ dispatch }, payload) {
       return resource.login(payload).then(res => {
         dispatch('ActionSetUser', res.body.user)
