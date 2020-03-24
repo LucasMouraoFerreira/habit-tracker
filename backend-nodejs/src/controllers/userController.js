@@ -44,7 +44,7 @@ router.put('/', async (req, res) => {
 
         user.password = undefined;
 
-        return res.send(user);
+        return res.send({user});
 
     } catch (err) {
         return res.status(400).send({ error: 'Error updating user' });
@@ -117,7 +117,7 @@ router.put('/profilephoto', multer(multerConfig).single('file'), async (req, res
 
         user.password = undefined;
 
-        return res.send(user);
+        return res.send({user});
     } catch (err) {
         return res.status(400).send({ error: 'Error uploading profile photo' });
     }
@@ -156,7 +156,7 @@ router.delete('/profilephoto', async (req, res) => {
 
         user.password = undefined;
 
-        return res.send(user);
+        return res.send({user});
     } catch (err) {
         return res.status(400).send({ error: 'Error deleting profile photo' });
     }

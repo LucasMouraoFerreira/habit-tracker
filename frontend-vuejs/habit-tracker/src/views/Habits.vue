@@ -12,30 +12,43 @@
       </b-navbar-nav>
     </b-navbar>
 
-    <b-container>
-      <b-row class="mt-5">
-        <b-col md="4" class="mb-4">
-          <div class="card">
-            <div class="card-body">
-              <div class="text-center theme-color mb-2">
-                <h4>Profile</h4>
-              </div>
-            </div>
-          </div>
-          <button v-on:click="test" class="btn btn-outline-light btn-sm">test</button>
-        </b-col>
+    <section v-if="errored">
+      <p>Sorry, we couldn't connect to the server. Please, try again later.</p>
+    </section>
 
-        <b-col md="6">
-          <div class="overflow-auto">
-            <ul class="list-group">
-              <li class="list-group-item mb-2 rounded-lg">Habit</li>
-              <li class="list-group-item mb-2 rounded-lg">Habit</li>
-              <li class="list-group-item mb-2 rounded-lg">Habit</li>
-            </ul>
-          </div>
-        </b-col>
-      </b-row>
-    </b-container>
+    <section v-else>
+      <div v-if="loading">Loading...</div>
+
+      <div v-else>
+        <b-container>
+          <b-row class="mt-5">
+            <b-col md="4" class="mb-4">
+              <div class="card">
+                <div class="card-body">
+                  <div class="text-center theme-color mb-2 profile">
+                    <img :src="user.profilePhoto.url" alt="profile photo">
+                    <p>Welcome {{user.name}}!</p>
+                    <p>{{user.habitsOverallPercentage}}</p>
+                  </div>
+                </div>
+              </div>
+            </b-col>
+
+            <b-col md="6">
+              <div class="overflow-auto">
+                <ul class="list-group">
+                  <li
+                    v-for="habit in habits"
+                    v-bind:key="habit._id"
+                    class="list-group-item mb-2 rounded-lg"
+                  >{{habit.name}}</li>
+                </ul>
+              </div>
+            </b-col>
+          </b-row>
+        </b-container>
+      </div>
+    </section>
 
     <div class="footer pt-2 pl-2">
       <p>&copy; Lucas Ferreira 2020</p>
@@ -51,8 +64,58 @@ import resource from "../http";
 export default {
   name: "Habits",
   components: {},
-  data: () => ({}),
-  mounted() {},
+  data: () => ({
+    loading: true,
+    errored: false,
+    user: {
+      profilePhoto: {
+        name: "default-user",
+        key: "default-user",
+        url: "http://localhost:8080/images/default-user.png"
+      },
+      habitsOverallPercentage: 0,
+      _id: "",
+      email: "",
+      name: "",
+      __v: 0
+    },
+    habits: [
+      {
+        reminderMessage: "Time to practice your habit!",
+        currentPercentage: 0,
+        color: "#009688",
+        maxConsecutiveDaysPerforming: 0,
+        consecutiveDaysPerforming: 0,
+        consecutiveDaysNotPerforming: 0,
+        _id: "",
+        name: "",
+        percentageHistory: [
+          {
+            percentage: 0,
+            performed: false,
+            _id: "",
+            date: ""
+          }
+        ],
+        user: "",
+        __v: 0
+      }
+    ]
+  }),
+  async mounted() {
+    try {
+      await resource.getAllHabits().then(res => {
+        console.log(res.body);
+        this.user = res.body.user;
+        this.habits = res.body.habits;
+      });
+    } catch (err) {
+      alert(err.body.error ? err.body.error : "Unexpected Error");
+      this.errored = true;
+    } finally {
+      this.loading = false;
+    }
+  },
   methods: {
     ...mapActions(["ActionSignOut", "ActionLoadSession"]),
     async submitLogin() {
@@ -62,17 +125,7 @@ export default {
       } catch (err) {
         console.log(err);
       }
-    },
-    async test() {
-      try {
-        await resource.getAllHabits().then(res => {
-          console.log(res.body);
-        });
-      } catch (err) {
-        console.log(err)
-        alert(err.body.error ? err.body.error : 'Unexpected Error')
-      }
-    }
+    }    
   }
 };
 </script>
@@ -116,6 +169,10 @@ body {
   background-color: #ba1a67;
 }
 
+.profile img {
+  height: 150px;
+  border-radius: 10px;
+}
 .card,
 .list-group-item {
   border: 1px solid #ffdeeb !important;

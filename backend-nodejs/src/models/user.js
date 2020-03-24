@@ -39,7 +39,7 @@ const UserSchema = new mongoose.Schema({
         },
         url: {
             type: String,
-            default: 'http://localhost:8080/images/default-user.jpg'
+            default: 'http://localhost:8080/images/default-user.png'
         }        
     }    
 });
