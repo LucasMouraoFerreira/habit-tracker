@@ -42,6 +42,7 @@
           <button v-on:click="register = !register" class="btn btn-outline-light btn-sm mt-1">Register</button>
           </div>      
           <div v-else>
+            
             <form @submit.prevent="submitRegister()">
             <div class="form-group">
               <input
@@ -72,6 +73,7 @@
             </div>
             <button class="btn btn-outline-light btn-md w-100">Register</button>
           </form>
+
           <h6 class="theme-color mt-2">Already have an account?</h6>
           <button v-on:click="register = !register" class="btn btn-outline-light btn-sm mt-1">Sign In</button>
           </div>      

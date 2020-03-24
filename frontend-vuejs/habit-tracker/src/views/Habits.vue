@@ -1,13 +1,12 @@
 <template>
   <div class="habits">
-    <b-navbar toggleable="lg" type="white" variant="white" class="navbar">
-      <b-navbar-brand href="#" class="navbar-image theme-color ml-2 mb-0 pb-0">
-        Habits
-        <img src="../assets/habit-logo.png" class="d-inline-block align-top" alt="logo" />
+    <b-navbar toggleable="lg" type="white" variant="dark">
+      <b-navbar-brand href="#" class="navbar-image ml-2 mb-0 pb-0">
+        <div class="font-weight-bold text-white">Habits</div>                
       </b-navbar-brand>
       <b-navbar-nav class="ml-auto">
         <b-nav-form>
-          <button v-on:click="submitLogin" class="btn btn-outline-light btn-sm">Sign Out</button>
+          <button v-on:click="signOut" class="btn btn-outline-light">Sign Out</button>
         </b-nav-form>
       </b-navbar-nav>
     </b-navbar>
@@ -22,13 +21,13 @@
       <div v-else>
         <b-container>
           <b-row class="mt-5">
-            <b-col md="4" class="mb-4">
+            <b-col md="3" class="mb-4">
               <div class="card">
-                <div class="card-body">
-                  <div class="text-center theme-color mb-2 profile">
-                    <img :src="user.profilePhoto.url" alt="profile photo">
-                    <p>Welcome {{user.name}}!</p>
-                    <p>{{user.habitsOverallPercentage}}</p>
+                <div class="card-body p-0">
+                  <div class="text-center text-theme mb-2 profile p-0">
+                    <img :src="user.profilePhoto.url" alt="profile photo" />
+                    <h4 class="mt-1 font-weight-bold">Welcome {{user.name}}!</h4>
+                    <p class="font-weight-bold">{{user.habitsOverallPercentage}}</p>
                   </div>
                 </div>
               </div>
@@ -36,12 +35,26 @@
 
             <b-col md="6">
               <div class="overflow-auto">
+                <div class="text-right mb-4">
+                  <b-button
+                    variant="success"
+                    @click="$bvModal.show('modal-create-habit')"
+                  >Create Habit</b-button>
+                </div>
+
                 <ul class="list-group">
                   <li
                     v-for="habit in habits"
                     v-bind:key="habit._id"
-                    class="list-group-item mb-2 rounded-lg"
-                  >{{habit.name}}</li>
+                    class="list-group-item mb-2 rounded-lg p-0"
+                    v-bind:style="{color: habit.color}"                     
+                  >
+                  <div v-bind:style="{'border-left': `25px solid ${habit.color}`}">
+                    <div class="ml-3">
+                      {{habit.name}}
+                    </div>                    
+                    </div>                  
+                  </li>
                 </ul>
               </div>
             </b-col>
@@ -49,6 +62,51 @@
         </b-container>
       </div>
     </section>
+    
+    <!--Start Modals-->
+
+    <b-modal id="modal-create-habit" hide-footer>
+      <template v-slot:modal-title>
+        <div class="text-theme font-weight-bold">
+          Create A New Habit!
+          </div>        
+      </template>
+      <div class="d-block text-center">
+        <form @submit.prevent="submitNewHabit()">
+            <div class="form-group">
+              <input
+                required
+                type="name"
+                class="form-control theme-color"
+                placeholder="Habit Name"
+                v-model="habitForm.name"
+              />
+            </div>
+           <div class="form-group">
+              <input
+                type="reminderMessage"
+                class="form-control"
+                placeholder="Reminder Message"
+                v-model="habitForm.reminderMessage"
+              />
+            </div>
+            <div class="form-group">
+              <input
+                type="color"
+                class="form-control"
+                placeholder="Color"
+                v-model="habitForm.color"
+              />
+            </div>
+            <button class="btn btn-success btn-md w-100">create</button> 
+        </form>
+      </div>
+      <div class="text-right">
+        <b-button class="mt-2" variant="info" @click="$bvModal.hide('modal-create-habit')">Cancel</b-button>                    
+      </div>
+    </b-modal>
+
+    <!--End Modals-->
 
     <div class="footer pt-2 pl-2">
       <p>&copy; Lucas Ferreira 2020</p>
@@ -100,12 +158,29 @@ export default {
         user: "",
         __v: 0
       }
-    ]
+    ],
+    selectedProfileImage: null,
+    userForm: {
+      name: "",
+      password: ""
+    },
+    habitForm: {
+      name: "",
+      reminderMessage: "",
+      color: "#009688"
+    },
+    updateHabitForm: {
+      name: "",
+      reminderMessage: "",
+      color: ""
+    },
+    updateHabitInfo: {
+      index: 0
+    }
   }),
   async mounted() {
     try {
       await resource.getAllHabits().then(res => {
-        console.log(res.body);
         this.user = res.body.user;
         this.habits = res.body.habits;
       });
@@ -117,15 +192,112 @@ export default {
     }
   },
   methods: {
-    ...mapActions(["ActionSignOut", "ActionLoadSession"]),
-    async submitLogin() {
+    ...mapActions(["ActionSignOut"]),
+    async signOut() {
       try {
         await this.ActionSignOut();
         await this.$router.push({ name: "Home" });
       } catch (err) {
         console.log(err);
       }
-    }    
+    },
+    async submitNewHabit() {
+      try {
+        await resource.postHabit(this.habitForm).then(res => {
+          console.log('opa');
+          this.habits.push(res.body.habit);
+          this.user.habitsOverallPercentage = res.body.habitsOverallPercentage;
+          this.$bvModal.hide('modal-create-habit');
+        });
+      } catch (err) {
+        alert(err.body.error ? err.body.error : "Unexpected Error");
+      }
+    },
+    async performHabit() {
+      try {
+        await resource
+          .performHabit({ id: this.habits[this.updateHabitInfo.index]._id })
+          .then(res => {
+            this.habits[this.updateHabitInfo.index] = res.body.habit;
+            this.user.habitsOverallPercentage =
+              res.body.habitsOverallPercentage;
+          });
+      } catch (err) {
+        alert(err.body.error ? err.body.error : "Unexpected Error");
+      }
+    },
+    async updateHabit() {
+      try {
+        await resource
+          .updateHabit(
+            { id: this.habits[this.updateHabitInfo.index]._id },
+            this.updateHabitForm
+          )
+          .then(res => {
+            this.habits[this.updateHabitInfo.index] = res.body.habit;
+          });
+      } catch (err) {
+        alert(err.body.error ? err.body.error : "Unexpected Error");
+      }
+    },
+    async deleteHabit() {
+      try {
+        await resource
+          .updateHabit({ id: this.habits[this.updateHabitInfo.index]._id })
+          .then(res => {
+            res;
+            this.habits.slice([this.updateHabitInfo.index], 1);
+          });
+      } catch (err) {
+        alert(err.body.error ? err.body.error : "Unexpected Error");
+      }
+    },
+    onFileSelected(event) {
+      this.selectedProfileImage = event.target.files[0];
+    },
+    async uploadProfilePhoto() {
+      try {
+        const fd = new FormData();
+        fd.append(
+          "file",
+          this.selectedProfileImage,
+          this.selectedProfileImage.name
+        );
+        await resource.setProfilePhoto(fd).then(res => {
+          this.user = res.body.user;
+        });
+      } catch (err) {
+        alert(err.body.error ? err.body.error : "Unexpected Error");
+      }
+    },
+    async deleteProfilePhoto() {
+      try {
+        await resource.deleteProfilePhoto().then(res => {
+          this.user = res.body.user;
+        });
+      } catch (err) {
+        alert(err.body.error ? err.body.error : "Unexpected Error");
+      }
+    },
+    async updateUser() {
+      try {
+        await resource.updateUser(this.userForm).then(res => {
+          this.user = res.body.user;
+        });
+      } catch (err) {
+        alert(err.body.error ? err.body.error : "Unexpected Error");
+      }
+    },
+    async deleteUser() {
+      try {
+        await resource.deleteUser().then(res => {
+          res;
+          this.signOut();
+        });
+      } catch (err) {
+        alert(err.body.error ? err.body.error : "Unexpected Error");
+      }
+    }
   }
 };
 </script>
@@ -133,7 +305,7 @@ export default {
 
 <style>
 body {
-  background-color: #fffafc;
+  background-color: #E9ECEF;
 }
 
 .footer {
@@ -141,41 +313,36 @@ body {
   left: 0;
   bottom: 0;
   width: 100%;
-  background-color: #3b021d;
   color: white;
+  background-color: #1d1f21;
   text-align: left;
 }
 
-.theme-color {
-  color: #ba1a67 !important;
+/*input[type="color"],*/
+input[type="name"],
+input[type="reminderMessage"],
+input[type="password"],
+textarea {
+  outline: none;
+  box-shadow: none !important;
 }
-.navbar {
-  border-bottom: 1px solid #ba1a67 !important;
-}
-
-.navbar-image img {
-  height: 30px;
-}
-
-.btn-sm {
-  border-color: #ba1a67;
-  border-width: small;
-  color: #ba1a67;
-  background-color: white;
-}
-
-.btn-sm:hover {
-  color: white;
-  background-color: #ba1a67;
+button:focus,
+a:focus,
+button.btn:focus,
+.btn-md:focus,
+a.btn:focus {
+  outline: 0 !important;
+  -webkit-appearance: none;
+  box-shadow: none;
 }
 
 .profile img {
   height: 150px;
   border-radius: 10px;
 }
-.card,
-.list-group-item {
-  border: 1px solid #ffdeeb !important;
+
+.text-theme {
+  color: #505962;;
 }
 
 .list-group {

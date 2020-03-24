@@ -47,8 +47,6 @@ router.get('/', async (req, res) => {
 
 router.post('/', async (req, res) => {
 
-    const { name, reminderMessage, color } = req.body;
-
     try {
         /////Sorry for this code, but CORS made me do it -> right implementation uses /router.use(authMiddleware)/;
         var userId;
@@ -62,9 +60,16 @@ router.post('/', async (req, res) => {
         })
         ///////
 
-        const percentageHistory = generateNewPercentageHistory();
+        var objForCreate = {};
 
-        const habit = await Habit.create({ name, reminderMessage, color, percentageHistory, user: userId });
+        //prevent null values
+        if (req.body.name) objForCreate.name = req.body.name;
+        if (req.body.reminderMessage) objForCreate.reminderMessage = req.body.reminderMessage;
+        if (req.body.color) objForCreate.color = req.body.color;
+        objForCreate.percentageHistory = generateNewPercentageHistory();
+        objForCreate.user = userId;
+
+        const habit = await Habit.create(objForCreate);
 
         const habitsOverallPercentage = await FindHabitsSetUserOverallPercentageAndUpdate(userId);
 
@@ -78,12 +83,7 @@ router.post('/', async (req, res) => {
 
 router.put('/:habitId', async (req, res) => {
 
-    var objForUpdate = {};
 
-    //prevent null values
-    if (req.body.name) objForUpdate.name = req.body.name;
-    if (req.body.reminderMessage) objForUpdate.reminderMessage = req.body.reminderMessage;
-    if (req.body.color) objForUpdate.color = req.body.color;
 
     try {
         /////Sorry for this code, but CORS made me do it -> right implementation uses /router.use(authMiddleware)/;
@@ -92,9 +92,15 @@ router.put('/:habitId', async (req, res) => {
         jwt.verify(token, authConfig.secret, (err, decoded) => {
             if (err) {
                 res.status(401).send({ error: 'Invalid token' });
-            }                   
+            }
         })
         ///////
+        var objForUpdate = {};
+
+        //prevent null values
+        if (req.body.name) objForUpdate.name = req.body.name;
+        if (req.body.reminderMessage) objForUpdate.reminderMessage = req.body.reminderMessage;
+        if (req.body.color) objForUpdate.color = req.body.color;
 
         const habit = await Habit.findByIdAndUpdate(req.params.habitId, { $set: objForUpdate }, { new: true });
 

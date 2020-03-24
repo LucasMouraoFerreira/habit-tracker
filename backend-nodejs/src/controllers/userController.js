@@ -144,10 +144,10 @@ router.delete('/profilephoto', async (req, res) => {
             return res.status(400).send({ error: 'Profile photo not found' });
 
         const objForUpdate = {
-            name: "",
-            size: "",
-            key: "",
-            url: "",
+            name: "default-user",
+            size: "0",
+            key: "default-user",
+            url: "http://localhost:8080/images/default-user.png",
         };
 
         const user = await User.findByIdAndUpdate(userId, { profilePhoto: objForUpdate }, { new: true });
