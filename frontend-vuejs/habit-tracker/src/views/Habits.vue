@@ -33,7 +33,7 @@
               </div>
             </b-col>
 
-            <b-col md="6">
+            <b-col md="8">
               <div class="overflow-auto">
                 <div class="text-right mb-4">
                   <b-button
@@ -44,14 +44,25 @@
 
                 <ul class="list-group">
                   <li
-                    v-for="habit in habits"
+                    v-for="(habit, index) in habits"
                     v-bind:key="habit._id"
-                    class="list-group-item mb-2 rounded-lg p-0"
+                    class="list-group-item mb-2 rounded-lg p-0 shadow-sm"
                     v-bind:style="{color: habit.color}"                     
                   >
                   <div v-bind:style="{'border-left': `25px solid ${habit.color}`}">
-                    <div class="ml-3">
-                      {{habit.name}}
+                    <div class="ml-1 p-1">
+                      <b-row>
+                        <b-col cols="2">
+                          <button class="btn btn-sm btn-danger m-1" @click="deleteHabit(index)"><font-awesome-icon :icon="['fas', 'trash']" /></button>
+                          <button class="btn btn-sm btn-primary"><font-awesome-icon :icon="['fas', 'edit']" /></button>
+                        </b-col>
+                        <b-col cols="7">
+                          7 day history
+                        </b-col>
+                        <b-col cols="3">
+                          <h6 class="font-weight-bold text-theme">{{habit.name}}</h6>
+                        </b-col>
+                      </b-row>                      
                     </div>                    
                     </div>                  
                   </li>
@@ -98,7 +109,7 @@
                 v-model="habitForm.color"
               />
             </div>
-            <button class="btn btn-success btn-md w-100">create</button> 
+            <button class="btn btn-success btn-md w-100">Create</button> 
         </form>
       </div>
       <div class="text-right">
@@ -173,10 +184,7 @@ export default {
       name: "",
       reminderMessage: "",
       color: ""
-    },
-    updateHabitInfo: {
-      index: 0
-    }
+    }    
   }),
   async mounted() {
     try {
@@ -204,7 +212,6 @@ export default {
     async submitNewHabit() {
       try {
         await resource.postHabit(this.habitForm).then(res => {
-          console.log('opa');
           this.habits.push(res.body.habit);
           this.user.habitsOverallPercentage = res.body.habitsOverallPercentage;
           this.$bvModal.hide('modal-create-habit');
@@ -226,27 +233,27 @@ export default {
         alert(err.body.error ? err.body.error : "Unexpected Error");
       }
     },
-    async updateHabit() {
+    async updateHabit(index) {
       try {
         await resource
           .updateHabit(
-            { id: this.habits[this.updateHabitInfo.index]._id },
+            { id: this.habits[index]._id },
             this.updateHabitForm
           )
           .then(res => {
-            this.habits[this.updateHabitInfo.index] = res.body.habit;
+            this.habits[index] = res.body.habit;
           });
       } catch (err) {
         alert(err.body.error ? err.body.error : "Unexpected Error");
       }
     },
-    async deleteHabit() {
+    async deleteHabit(index) {
       try {
         await resource
-          .updateHabit({ id: this.habits[this.updateHabitInfo.index]._id })
+          .deleteHabit({ id: this.habits[index]._id })
           .then(res => {
             res;
-            this.habits.slice([this.updateHabitInfo.index], 1);
+            this.habits.splice(index, 1);
           });
       } catch (err) {
         alert(err.body.error ? err.body.error : "Unexpected Error");
@@ -364,7 +371,7 @@ a.btn:focus {
 
 /* Handle */
 .list-group::-webkit-scrollbar-thumb {
-  background: #ba1a67;
+  background: #343A40;
   border-radius: 10px;
 }
 </style>
