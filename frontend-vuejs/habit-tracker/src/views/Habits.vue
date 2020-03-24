@@ -2,7 +2,7 @@
   <div class="habits">
     <b-navbar toggleable="lg" type="white" variant="dark">
       <b-navbar-brand href="#" class="navbar-image ml-2 mb-0 pb-0">
-        <div class="font-weight-bold text-white">Habits</div>                
+        <div class="font-weight-bold text-white">Habits</div>
       </b-navbar-brand>
       <b-navbar-nav class="ml-auto">
         <b-nav-form>
@@ -42,82 +42,121 @@
                   >Create Habit</b-button>
                 </div>
 
-                <ul class="list-group">
+                <div v-if="renderHabits">
+                  <ul class="list-group">
                   <li
                     v-for="(habit, index) in habits"
                     v-bind:key="habit._id"
                     class="list-group-item mb-2 rounded-lg p-0 shadow-sm"
-                    v-bind:style="{color: habit.color}"                     
+                    v-bind:style="{color: habit.color}"
                   >
-                  <div v-bind:style="{'border-left': `25px solid ${habit.color}`}">
-                    <div class="ml-1 p-1">
-                      <b-row>
-                        <b-col cols="2">
-                          <button class="btn btn-sm btn-danger m-1" @click="deleteHabit(index)"><font-awesome-icon :icon="['fas', 'trash']" /></button>
-                          <button class="btn btn-sm btn-primary"><font-awesome-icon :icon="['fas', 'edit']" /></button>
-                        </b-col>
-                        <b-col cols="7">
-                          7 day history
-                        </b-col>
-                        <b-col cols="3">
-                          <h6 class="font-weight-bold text-theme">{{habit.name}}</h6>
-                        </b-col>
-                      </b-row>                      
-                    </div>                    
-                    </div>                  
+                    <div v-bind:style="{'border-left': `25px solid ${habit.color}`}">
+                      <div class="ml-1 p-1">
+                        <b-row>
+                          <b-col cols="2">
+                            <button class="btn btn-sm btn-danger m-1" @click="deleteHabit(index)">
+                              <font-awesome-icon :icon="['fas', 'trash']" />
+                            </button>
+                            <button
+                              class="btn btn-sm btn-primary"
+                              @click="updateCurrenteHabit(index)"
+                            >
+                              <font-awesome-icon :icon="['fas', 'edit']" />
+                            </button>
+                          </b-col>
+                          <b-col cols="7">7 day history</b-col>
+                          <b-col cols="3">
+                            <h6 class="font-weight-bold text-theme">{{habit.name}}</h6>
+                          </b-col>
+                        </b-row>
+                      </div>
+                    </div>
                   </li>
                 </ul>
+                </div>                
               </div>
             </b-col>
           </b-row>
         </b-container>
       </div>
     </section>
-    
-    <!--Start Modals-->
 
+    <!--Start Create Habit Modal-->
     <b-modal id="modal-create-habit" hide-footer>
       <template v-slot:modal-title>
-        <div class="text-theme font-weight-bold">
-          Create A New Habit!
-          </div>        
+        <div class="text-theme font-weight-bold">Create A New Habit!</div>
       </template>
       <div class="d-block text-center">
         <form @submit.prevent="submitNewHabit()">
-            <div class="form-group">
-              <input
-                required
-                type="name"
-                class="form-control theme-color"
-                placeholder="Habit Name"
-                v-model="habitForm.name"
-              />
-            </div>
-           <div class="form-group">
-              <input
-                type="reminderMessage"
-                class="form-control"
-                placeholder="Reminder Message"
-                v-model="habitForm.reminderMessage"
-              />
-            </div>
-            <div class="form-group">
-              <input
-                type="color"
-                class="form-control"
-                placeholder="Color"
-                v-model="habitForm.color"
-              />
-            </div>
-            <button class="btn btn-success btn-md w-100">Create</button> 
+          <div class="form-group">
+            <input
+              required
+              type="name"
+              class="form-control theme-color"
+              placeholder="Habit Name"
+              v-model="habitForm.name"
+            />
+          </div>
+          <div class="form-group">
+            <input
+              type="reminderMessage"
+              class="form-control"
+              placeholder="Reminder Message"
+              v-model="habitForm.reminderMessage"
+            />
+          </div>
+          <div class="form-group">
+            <input type="color" class="form-control" placeholder="Color" v-model="habitForm.color" />
+          </div>
+          <button class="btn btn-success btn-md w-100">Create</button>
         </form>
       </div>
       <div class="text-right">
-        <b-button class="mt-2" variant="info" @click="$bvModal.hide('modal-create-habit')">Cancel</b-button>                    
+        <b-button class="mt-2" variant="info" @click="$bvModal.hide('modal-create-habit')">Cancel</b-button>
       </div>
     </b-modal>
+    <!--End Create Habit Modal-->
 
-    <!--End Modals-->
+    <!--Start Update Habit Modal-->
+    <b-modal id="modal-update-habit" hide-footer>
+      <template v-slot:modal-title>
+        <div class="text-theme font-weight-bold">Update Habit {{habits[current_index].name}}</div>
+      </template>
+      <div class="d-block text-center">
+        <form @submit.prevent="updateHabit(current_index)">
+          <div class="form-group">
+            <input
+              required
+              readonly
+              type="name"
+              class="form-control theme-color"
+              v-model="habits[current_index].name"
+            />
+          </div>
+          <div class="form-group">
+            <input
+              type="reminderMessage"
+              class="form-control"
+              placeholder="New Reminder Message"
+              v-model="habits[current_index].reminderMessage"
+            />
+          </div>
+          <div class="form-group">
+            <input
+              type="color"
+              class="form-control"
+              placeholder="Color"
+              v-model="habits[current_index].color"
+            />
+          </div>
+          <button class="btn btn-success btn-md w-100">Update</button>
+        </form>
+      </div>
+      <div class="text-right">
+        <b-button class="mt-2" variant="info" @click="$bvModal.hide('modal-update-habit')">Cancel</b-button>
+      </div>
+    </b-modal>
+    <!--End Update Habit Modal-->
 
     <div class="footer pt-2 pl-2">
       <p>&copy; Lucas Ferreira 2020</p>
@@ -180,17 +219,17 @@ export default {
       reminderMessage: "",
       color: "#009688"
     },
-    updateHabitForm: {
-      name: "",
-      reminderMessage: "",
-      color: ""
-    }    
+    current_index: 0,
+    renderHabits: false,
   }),
   async mounted() {
     try {
       await resource.getAllHabits().then(res => {
         this.user = res.body.user;
-        this.habits = res.body.habits;
+        if(Array.isArray(res.body.habits) && res.body.habits.length){
+          this.habits = res.body.habits;
+          this.renderHabits = true;
+        }        
       });
     } catch (err) {
       alert(err.body.error ? err.body.error : "Unexpected Error");
@@ -209,12 +248,20 @@ export default {
         console.log(err);
       }
     },
+    updateCurrenteHabit(index) {
+      this.current_index = index;
+      this.$bvModal.show("modal-update-habit");
+    },
     async submitNewHabit() {
       try {
         await resource.postHabit(this.habitForm).then(res => {
           this.habits.push(res.body.habit);
           this.user.habitsOverallPercentage = res.body.habitsOverallPercentage;
-          this.$bvModal.hide('modal-create-habit');
+          if(!this.renderHabits){
+            this.habits.shift();
+            this.renderHabits = true;
+          }
+          this.$bvModal.hide("modal-create-habit");
         });
       } catch (err) {
         alert(err.body.error ? err.body.error : "Unexpected Error");
@@ -236,12 +283,11 @@ export default {
     async updateHabit(index) {
       try {
         await resource
-          .updateHabit(
-            { id: this.habits[index]._id },
-            this.updateHabitForm
-          )
+          .updateHabit({ id: this.habits[index]._id }, this.habits[index])
           .then(res => {
+            console.log(res);
             this.habits[index] = res.body.habit;
+            this.$bvModal.hide("modal-update-habit");
           });
       } catch (err) {
         alert(err.body.error ? err.body.error : "Unexpected Error");
@@ -249,12 +295,14 @@ export default {
     },
     async deleteHabit(index) {
       try {
-        await resource
-          .deleteHabit({ id: this.habits[index]._id })
-          .then(res => {
-            res;
-            this.habits.splice(index, 1);
-          });
+        await resource.deleteHabit({ id: this.habits[index]._id }).then(res => {
+          this.user.habitsOverallPercentage = res.body.habitsOverallPercentage;
+          this.habits.splice(index, 1);  
+          if(!this.habits.length){
+            this.renderHabits = false;
+            this.$router.go();
+          }                 
+        });
       } catch (err) {
         alert(err.body.error ? err.body.error : "Unexpected Error");
       }
@@ -312,7 +360,7 @@ export default {
 
 <style>
 body {
-  background-color: #E9ECEF;
+  background-color: #e9ecef;
 }
 
 .footer {
@@ -349,7 +397,7 @@ a.btn:focus {
 }
 
 .text-theme {
-  color: #505962;;
+  color: #505962;
 }
 
 .list-group {
@@ -371,7 +419,7 @@ a.btn:focus {
 
 /* Handle */
 .list-group::-webkit-scrollbar-thumb {
-  background: #343A40;
+  background: #343a40;
   border-radius: 10px;
 }
 </style>
