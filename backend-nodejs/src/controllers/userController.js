@@ -110,7 +110,7 @@ router.put('/profilephoto', multer(multerConfig).single('file'), async (req, res
 
         const photoKey = await User.findById(userId);
 
-        if (photoKey.profilePhoto.key)
+        if (photoKey.profilePhoto.key && photoKey.profilePhoto.key !== 'default-user')
             promisify(fs.unlink)(path.resolve(__dirname, '..', '..', 'tmp', 'uploads', photoKey.profilePhoto.key));
 
         const user = await User.findByIdAndUpdate(userId, { profilePhoto: objForUpdate }, { new: true });
@@ -140,7 +140,7 @@ router.delete('/profilephoto', async (req, res) => {
 
         const photoKey = await User.findById(userId);
 
-        if (!photoKey.profilePhoto.key)
+        if (!photoKey.profilePhoto.key || photoKey.profilePhoto.key === 'default-user')
             return res.status(400).send({ error: 'Profile photo not found' });
 
         const objForUpdate = {

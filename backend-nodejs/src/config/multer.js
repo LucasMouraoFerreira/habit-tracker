@@ -19,7 +19,7 @@ module.exports = {
         },
     }),
     limits: {
-        fileSize: 1024 * 1024, // 1 Mb
+        fileSize: 1024 * 1024 * 5, // 5 Mb
     },
     fileFilter: (req, file, cb) => {
         const allowedMimes = [

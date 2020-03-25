@@ -24,10 +24,14 @@
             <b-col md="3" class="mb-4">
               <div class="card">
                 <div class="card-body p-0">
-                  <div class="text-center text-theme mb-2 profile p-0">
+                  <div class="text-center text-theme mb-2 mt-2 profile p-0">
                     <img :src="user.profilePhoto.url" alt="profile photo" />
                     <h5 class="mt-1 font-weight-bold">Welcome {{user.name}}!</h5>
                     <h4 class="font-weight-bold text-success">{{user.habitsOverallPercentage}}%</h4>
+                    <br />
+                    <b-button variant="primary" @click="$bvModal.show('modal-update-user')">
+                      <font-awesome-icon :icon="['fas', 'user-edit']" />
+                    </b-button>
                   </div>
                 </div>
               </div>
@@ -75,7 +79,7 @@
                                 class="btn btn-md btn-primary m-1 inline"
                                 @click="isShow[index].x = !isShow[index].x"
                               >
-                                <font-awesome-icon :icon="['fas', 'chart-bar']" size="2x" />  
+                                <font-awesome-icon :icon="['fas', 'chart-bar']" size="2x" />
                                 <h6>History</h6>
                               </button>
                             </b-col>
@@ -114,6 +118,48 @@
         </b-container>
       </div>
     </section>
+
+    <!--Start Update User Modal-->
+    <b-modal id="modal-update-user" hide-footer>
+      <template>
+        <div class="text-theme font-weight-bold">Update Profile Photo</div>
+        <br>
+        <form @submit.prevent="uploadProfilePhoto()">
+        <b-form-file class="mb-3"
+          v-model="selectedProfileImage"
+          :state="Boolean(file)"
+          placeholder="Choose a image or drop it here..."
+          drop-placeholder="Drop image here..."
+        ></b-form-file>
+        <div class="mb-3" v-if="selectedProfileImage">
+          <button class="btn btn-success btn-md w-100">Update</button>
+        </div>              
+        </form>
+        <div v-if="user.profilePhoto.name !== 'default-user'">
+          <button class="btn btn-danger btn-md w-100" @click="deleteProfilePhoto()">Delete</button>
+        </div>  
+      </template>
+      <div class="d-block text-center">
+        <div class="text-theme font-weight-bold mt-3">Update Profile Photo</div>
+        <br>
+        <form @submit.prevent="updateUser()">
+          <div class="form-group">
+            <input
+              required
+              type="password"
+              class="form-control"
+              placeholder="New Password"
+              v-model="userForm.password"
+            />
+          </div>         
+          <button class="btn btn-success btn-md w-100">Update</button>
+        </form>
+      </div>
+      <div class="text-right">
+        <b-button class="mt-2" variant="info" @click="$bvModal.hide('modal-update-user')">Cancel</b-button>
+      </div>
+    </b-modal>
+    <!--End Update User Modal-->
 
     <!--Start Create Habit Modal-->
     <b-modal id="modal-create-habit" hide-footer>
@@ -250,7 +296,6 @@ export default {
     ],
     selectedProfileImage: null,
     userForm: {
-      name: "",
       password: ""
     },
     habitForm: {
@@ -288,6 +333,7 @@ export default {
         await this.$router.push({ name: "Home" });
       } catch (err) {
         console.log(err);
+        this.$router.go();
       }
     },
     updateCurrenteHabit(index) {
@@ -351,9 +397,6 @@ export default {
         alert(err.body.error ? err.body.error : "Unexpected Error");
       }
     },
-    onFileSelected(event) {
-      this.selectedProfileImage = event.target.files[0];
-    },
     async uploadProfilePhoto() {
       try {
         const fd = new FormData();
@@ -364,6 +407,7 @@ export default {
         );
         await resource.setProfilePhoto(fd).then(res => {
           this.user = res.body.user;
+          this.$bvModal.hide("modal-update-user");
         });
       } catch (err) {
         alert(err.body.error ? err.body.error : "Unexpected Error");
@@ -373,6 +417,7 @@ export default {
       try {
         await resource.deleteProfilePhoto().then(res => {
           this.user = res.body.user;
+          this.$bvModal.hide("modal-update-user");
         });
       } catch (err) {
         alert(err.body.error ? err.body.error : "Unexpected Error");
@@ -382,6 +427,7 @@ export default {
       try {
         await resource.updateUser(this.userForm).then(res => {
           this.user = res.body.user;
+          this.$bvModal.hide('modal-update-user');
         });
       } catch (err) {
         alert(err.body.error ? err.body.error : "Unexpected Error");
