@@ -72,7 +72,7 @@ npm 6.13.4
 <img src="READMEimages/habit-tracker-preview0.jpg" alt="preview-image" width="800" height="370">
 <img src="READMEimages/habit-tracker-preview1.jpg" alt="preview-image" width="800" height="370">
 
-## Calculo da porcentagem do hábito:
+## Cálculo da porcentagem do hábito:
 
 A aplicação considera que todos os hábitos são diários.
 
