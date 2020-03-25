@@ -138,7 +138,7 @@ router.delete('/:habitId', async (req, res) => {
     }
 });
 
-router.post('/habitperformed/:habitId', async (req, res) => {
+router.post('/habitperformed', async (req, res) => {
 
     try {
 
@@ -154,11 +154,11 @@ router.post('/habitperformed/:habitId', async (req, res) => {
         })
         ///////
 
-        const habit = await Habit.findById(req.params.habitId);
+        const habit = await Habit.findById(req.body.id);
 
         // percentage history is supposed to have yesterday as the last day stored
         if (dateDiffInDays(habit.percentageHistory[29].date, new Date()) !== 1)
-            return res.status(400).send({ error: 'Unexpected Error' });
+            return res.status(400).send({ error: 'You already perform today!' });
 
         performHabit(habit);
 

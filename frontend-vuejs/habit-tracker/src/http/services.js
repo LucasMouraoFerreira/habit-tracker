@@ -7,7 +7,7 @@ export default {
     postHabit: {method: 'post', url: `${baseURL}habits`},
     updateHabit: {method: 'put', url: `${baseURL}habits{/id}`},
     deleteHabit: {method: 'delete', url: `${baseURL}habits{/id}`},
-    performHabit: {method: 'post', url: `${baseURL}habits/habitperformed{/id}`},
+    performHabit: {method: 'post', url: `${baseURL}habits/habitperformed`},
     setProfilePhoto: {method: 'put', url: `${baseURL}users/profilephoto`},
     deleteProfilePhoto: {method: 'delete', url: `${baseURL}users/profilephoto`},
     updateUser: {method: 'put', url: `${baseURL}users`},

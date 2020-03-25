@@ -26,14 +26,14 @@
                 <div class="card-body p-0">
                   <div class="text-center text-theme mb-2 profile p-0">
                     <img :src="user.profilePhoto.url" alt="profile photo" />
-                    <h4 class="mt-1 font-weight-bold">Welcome {{user.name}}!</h4>
-                    <p class="font-weight-bold">{{user.habitsOverallPercentage}}</p>
+                    <h5 class="mt-1 font-weight-bold">Welcome {{user.name}}!</h5>
+                    <h4 class="font-weight-bold text-success">{{user.habitsOverallPercentage}}%</h4>
                   </div>
                 </div>
               </div>
             </b-col>
 
-            <b-col md="8">
+            <b-col md="9">
               <div class="overflow-auto">
                 <div class="text-right mb-4">
                   <b-button
@@ -44,36 +44,42 @@
 
                 <div v-if="renderHabits">
                   <ul class="list-group">
-                  <li
-                    v-for="(habit, index) in habits"
-                    v-bind:key="habit._id"
-                    class="list-group-item mb-2 rounded-lg p-0 shadow-sm"
-                    v-bind:style="{color: habit.color}"
-                  >
-                    <div v-bind:style="{'border-left': `25px solid ${habit.color}`}">
-                      <div class="ml-1 p-1">
-                        <b-row>
-                          <b-col cols="2">
-                            <button class="btn btn-sm btn-danger m-1" @click="deleteHabit(index)">
-                              <font-awesome-icon :icon="['fas', 'trash']" />
-                            </button>
-                            <button
-                              class="btn btn-sm btn-primary"
-                              @click="updateCurrenteHabit(index)"
-                            >
-                              <font-awesome-icon :icon="['fas', 'edit']" />
-                            </button>
-                          </b-col>
-                          <b-col cols="7">7 day history</b-col>
-                          <b-col cols="3">
-                            <h6 class="font-weight-bold text-theme">{{habit.name}}</h6>
-                          </b-col>
-                        </b-row>
+                    <li
+                      v-for="(habit, index) in habits"
+                      v-bind:key="habit._id"
+                      class="list-group-item mb-2 rounded-lg p-0 shadow-sm"
+                      v-bind:style="{color: habit.color}"
+                    >
+                      <div v-bind:style="{'border-left': `25px solid ${habit.color}`}">
+                        <div class="ml-1 p-1">
+                          <b-row>
+                            <b-col cols="1">
+                              <button class="btn btn-sm btn-danger m-1" @click="deleteHabit(index)">
+                                <font-awesome-icon :icon="['fas', 'trash']" />
+                              </button>
+                              <button
+                                class="btn btn-sm btn-primary"
+                                @click="updateCurrenteHabit(index)"
+                              >
+                                <font-awesome-icon :icon="['fas', 'edit']" />
+                              </button>                            
+                            </b-col>
+                            <b-col cols="4">
+                              <button class="btn btn-sm btn-success m-1" @click="performHabitToday(index)">{{habit.reminderMessage}}</button>
+                            </b-col>
+                            <b-col cols="4">7 day history</b-col>
+                            <b-col cols="3">
+                              <h6 class="font-weight-bold text-theme">{{habit.name}}                                
+                              </h6>
+                             <h5 class="font-weight-bold" v-bind:style="{ color: habit.color}">
+                                {{user.habitsOverallPercentage}}%</h5>
+                            </b-col>
+                          </b-row>
+                        </div>
                       </div>
-                    </div>
-                  </li>
-                </ul>
-                </div>                
+                    </li>
+                  </ul>
+                </div>
               </div>
             </b-col>
           </b-row>
@@ -220,16 +226,16 @@ export default {
       color: "#009688"
     },
     current_index: 0,
-    renderHabits: false,
+    renderHabits: false
   }),
   async mounted() {
     try {
       await resource.getAllHabits().then(res => {
         this.user = res.body.user;
-        if(Array.isArray(res.body.habits) && res.body.habits.length){
+        if (Array.isArray(res.body.habits) && res.body.habits.length) {
           this.habits = res.body.habits;
           this.renderHabits = true;
-        }        
+        }
       });
     } catch (err) {
       alert(err.body.error ? err.body.error : "Unexpected Error");
@@ -257,7 +263,7 @@ export default {
         await resource.postHabit(this.habitForm).then(res => {
           this.habits.push(res.body.habit);
           this.user.habitsOverallPercentage = res.body.habitsOverallPercentage;
-          if(!this.renderHabits){
+          if (!this.renderHabits) {
             this.habits.shift();
             this.renderHabits = true;
           }
@@ -267,12 +273,11 @@ export default {
         alert(err.body.error ? err.body.error : "Unexpected Error");
       }
     },
-    async performHabit() {
+    async performHabitToday(index) {
       try {
-        await resource
-          .performHabit({ id: this.habits[this.updateHabitInfo.index]._id })
+        await resource.performHabit({ id: this.habits[index]._id })
           .then(res => {
-            this.habits[this.updateHabitInfo.index] = res.body.habit;
+            this.habits[index] = res.body.habit;
             this.user.habitsOverallPercentage =
               res.body.habitsOverallPercentage;
           });
@@ -282,8 +287,7 @@ export default {
     },
     async updateHabit(index) {
       try {
-        await resource
-          .updateHabit({ id: this.habits[index]._id }, this.habits[index])
+        await resource.updateHabit({ id: this.habits[index]._id }, this.habits[index])
           .then(res => {
             console.log(res);
             this.habits[index] = res.body.habit;
@@ -297,11 +301,11 @@ export default {
       try {
         await resource.deleteHabit({ id: this.habits[index]._id }).then(res => {
           this.user.habitsOverallPercentage = res.body.habitsOverallPercentage;
-          this.habits.splice(index, 1);  
-          if(!this.habits.length){
+          this.habits.splice(index, 1);
+          if (!this.habits.length) {
             this.renderHabits = false;
             this.$router.go();
-          }                 
+          }
         });
       } catch (err) {
         alert(err.body.error ? err.body.error : "Unexpected Error");
@@ -352,9 +356,10 @@ export default {
       } catch (err) {
         alert(err.body.error ? err.body.error : "Unexpected Error");
       }
-    }
+    }        
   }
-};
+}
+
 </script>
 
 
