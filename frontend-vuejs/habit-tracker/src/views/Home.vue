@@ -14,7 +14,7 @@
         <div class="card-body">
           <div class="text-center theme-color mb-2">
             <img src="../assets/habit-logo.png" alt="Brand" />
-            <h4>Habits</h4>
+            <h4 class="font-weight-bold">Habits</h4>
           </div>
           <div v-if="!register">
             <form @submit.prevent="submitLogin()">

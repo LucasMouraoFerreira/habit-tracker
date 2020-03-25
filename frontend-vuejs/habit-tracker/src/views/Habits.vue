@@ -62,20 +62,48 @@
                                 @click="updateCurrenteHabit(index)"
                               >
                                 <font-awesome-icon :icon="['fas', 'edit']" />
-                              </button>                            
+                              </button>
                             </b-col>
-                            <b-col cols="4">
-                              <button class="btn btn-sm btn-success m-1" @click="performHabitToday(index)">{{habit.reminderMessage}}</button>
+                            <b-col cols="5">
+                              <button
+                                class="btn btn-sm btn-success m-1"
+                                @click="performHabitToday(index)"
+                              >{{habit.reminderMessage}}</button>
                             </b-col>
-                            <b-col cols="4">7 day history</b-col>
                             <b-col cols="3">
-                              <h6 class="font-weight-bold text-theme">{{habit.name}}                                
-                              </h6>
-                             <h5 class="font-weight-bold" v-bind:style="{ color: habit.color}">
-                                {{user.habitsOverallPercentage}}%</h5>
+                              <button
+                                class="btn btn-md btn-primary m-1 inline"
+                                @click="isShow[index].x = !isShow[index].x"
+                              >
+                                <font-awesome-icon :icon="['fas', 'chart-bar']" size="2x" />  
+                                <h6>History</h6>
+                              </button>
+                            </b-col>
+                            <b-col cols="3">
+                              <h6 class="font-weight-bold text-theme">{{habit.name}}</h6>
+                              <h5
+                                class="font-weight-bold"
+                                v-bind:style="{ color: habit.color}"
+                              >{{habit.currentPercentage}}%</h5>
                             </b-col>
                           </b-row>
                         </div>
+                        <div class="text-center"></div>
+                        <transition name="slide">
+                          <div class="m-1" v-show="isShow[index].x">
+                            <area-chart
+                              :data="[[habit.percentageHistory[18].date, habit.percentageHistory[18].percentage], [habit.percentageHistory[19].date, habit.percentageHistory[19].percentage], [habit.percentageHistory[20].date, habit.percentageHistory[20].percentage],
+                          [habit.percentageHistory[21].date, habit.percentageHistory[21].percentage], [habit.percentageHistory[22].date, habit.percentageHistory[22].percentage], [habit.percentageHistory[23].date, habit.percentageHistory[23].percentage],
+                          [habit.percentageHistory[24].date, habit.percentageHistory[24].percentage], [habit.percentageHistory[25].date, habit.percentageHistory[25].percentage], [habit.percentageHistory[26].date, habit.percentageHistory[26].percentage],
+                           [habit.percentageHistory[27].date, habit.percentageHistory[27].percentage], [habit.percentageHistory[28].date, habit.percentageHistory[28].percentage], [habit.percentageHistory[29].date, habit.percentageHistory[29].percentage]]"
+                              width="100%"
+                              height="150px"
+                              :min="0"
+                              :max="100"
+                              :colors="[habit.color, '#666']"
+                            ></area-chart>
+                          </div>
+                        </transition>
                       </div>
                     </li>
                   </ul>
@@ -181,6 +209,11 @@ export default {
   data: () => ({
     loading: true,
     errored: false,
+    isShow: [
+      {
+        x: false
+      }
+    ],
     user: {
       profilePhoto: {
         name: "default-user",
@@ -235,6 +268,9 @@ export default {
         if (Array.isArray(res.body.habits) && res.body.habits.length) {
           this.habits = res.body.habits;
           this.renderHabits = true;
+          for (var i = 0; i < this.habits.length; i++) {
+            this.isShow.push({ x: false });
+          }
         }
       });
     } catch (err) {
@@ -262,6 +298,7 @@ export default {
       try {
         await resource.postHabit(this.habitForm).then(res => {
           this.habits.push(res.body.habit);
+          this.isShow.push({ x: false });
           this.user.habitsOverallPercentage = res.body.habitsOverallPercentage;
           if (!this.renderHabits) {
             this.habits.shift();
@@ -275,7 +312,8 @@ export default {
     },
     async performHabitToday(index) {
       try {
-        await resource.performHabit({ id: this.habits[index]._id })
+        await resource
+          .performHabit({ id: this.habits[index]._id })
           .then(res => {
             this.habits[index] = res.body.habit;
             this.user.habitsOverallPercentage =
@@ -287,7 +325,8 @@ export default {
     },
     async updateHabit(index) {
       try {
-        await resource.updateHabit({ id: this.habits[index]._id }, this.habits[index])
+        await resource
+          .updateHabit({ id: this.habits[index]._id }, this.habits[index])
           .then(res => {
             console.log(res);
             this.habits[index] = res.body.habit;
@@ -302,6 +341,7 @@ export default {
         await resource.deleteHabit({ id: this.habits[index]._id }).then(res => {
           this.user.habitsOverallPercentage = res.body.habitsOverallPercentage;
           this.habits.splice(index, 1);
+          this.isShow.splice(index, 1);
           if (!this.habits.length) {
             this.renderHabits = false;
             this.$router.go();
@@ -356,10 +396,9 @@ export default {
       } catch (err) {
         alert(err.body.error ? err.body.error : "Unexpected Error");
       }
-    }        
+    }
   }
-}
-
+};
 </script>
 
 
@@ -426,5 +465,39 @@ a.btn:focus {
 .list-group::-webkit-scrollbar-thumb {
   background: #343a40;
   border-radius: 10px;
+}
+
+.slide-enter-active {
+  -moz-transition-duration: 0.3s;
+  -webkit-transition-duration: 0.3s;
+  -o-transition-duration: 0.3s;
+  transition-duration: 0.3s;
+  -moz-transition-timing-function: ease-in;
+  -webkit-transition-timing-function: ease-in;
+  -o-transition-timing-function: ease-in;
+  transition-timing-function: ease-in;
+}
+
+.slide-leave-active {
+  -moz-transition-duration: 0.3s;
+  -webkit-transition-duration: 0.3s;
+  -o-transition-duration: 0.3s;
+  transition-duration: 0.3s;
+  -moz-transition-timing-function: cubic-bezier(0, 1, 0.5, 1);
+  -webkit-transition-timing-function: cubic-bezier(0, 1, 0.5, 1);
+  -o-transition-timing-function: cubic-bezier(0, 1, 0.5, 1);
+  transition-timing-function: cubic-bezier(0, 1, 0.5, 1);
+}
+
+.slide-enter-to,
+.slide-leave {
+  max-height: 100px;
+  overflow: hidden;
+}
+
+.slide-enter,
+.slide-leave-to {
+  overflow: hidden;
+  max-height: 0;
 }
 </style>
