@@ -1,31 +1,17 @@
 const express = require('express');
 const async = require('async');
-//const authMiddleware = require('../middlewares/auth')
+const authMiddleware = require('../middlewares/auth')
 const Habit = require('../models/habit');
 const User = require('../models/user');
-const authConfig = require('../config/auth.json');
-const jwt = require('jsonwebtoken');
 
 const router = express.Router();
 
-//router.use(authMiddleware);
+router.use(authMiddleware);
 
 router.get('/', async (req, res) => {
 
     try {
-        /////Sorry for this code, but CORS made me do it -> right implementation uses /router.use(authMiddleware)/;
-        var userId;
-        const tokenBody = req.headers.authorization.split(' ');
-        const [scheme, token] = tokenBody;
-        jwt.verify(token, authConfig.secret, (err, decoded) => {
-            if (err) {
-                res.status(401).send({ error: 'Invalid token' });
-            }
-            userId = decoded.id;
-        })
-        ///////
-
-        const habits = await Habit.find({ user: userId });
+        const habits = await Habit.find({ user: req.userId });
 
         lookForChangesInPercentageHistory(habits);
 
@@ -33,7 +19,7 @@ router.get('/', async (req, res) => {
 
         const habitsOverallPercentage = setUserOverallPercentage(habits);
 
-        const user = await User.findByIdAndUpdate(userId, { habitsOverallPercentage }, { new: true });
+        const user = await User.findByIdAndUpdate(req.userId, { habitsOverallPercentage }, { new: true });
 
         user.password = undefined;
 
@@ -48,18 +34,6 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
 
     try {
-        /////Sorry for this code, but CORS made me do it -> right implementation uses /router.use(authMiddleware)/;
-        var userId;
-        const tokenBody = req.headers.authorization.split(' ');
-        const [scheme, token] = tokenBody;
-        jwt.verify(token, authConfig.secret, (err, decoded) => {
-            if (err) {
-                res.status(401).send({ error: 'Invalid token' });
-            }
-            userId = decoded.id;
-        })
-        ///////
-
         var objForCreate = {};
 
         //prevent null values
@@ -67,11 +41,11 @@ router.post('/', async (req, res) => {
         if (req.body.reminderMessage) objForCreate.reminderMessage = req.body.reminderMessage;
         if (req.body.color) objForCreate.color = req.body.color;
         objForCreate.percentageHistory = generateNewPercentageHistory();
-        objForCreate.user = userId;
+        objForCreate.user = req.userId;
 
         const habit = await Habit.create(objForCreate);
 
-        const habitsOverallPercentage = await FindHabitsSetUserOverallPercentageAndUpdate(userId);
+        const habitsOverallPercentage = await FindHabitsSetUserOverallPercentageAndUpdate(req.userId);
 
         return res.send({ habit, habitsOverallPercentage });
 
@@ -83,20 +57,8 @@ router.post('/', async (req, res) => {
 
 router.put('/:habitId', async (req, res) => {
 
-
-
     try {
-        /////Sorry for this code, but CORS made me do it -> right implementation uses /router.use(authMiddleware)/;
-        const tokenBody = req.headers.authorization.split(' ');
-        const [scheme, token] = tokenBody;
-        jwt.verify(token, authConfig.secret, (err, decoded) => {
-            if (err) {
-                res.status(401).send({ error: 'Invalid token' });
-            }
-        })
-        ///////
         var objForUpdate = {};
-
         //prevent null values
         if (req.body.name) objForUpdate.name = req.body.name;
         if (req.body.reminderMessage) objForUpdate.reminderMessage = req.body.reminderMessage;
@@ -115,21 +77,9 @@ router.put('/:habitId', async (req, res) => {
 router.delete('/:habitId', async (req, res) => {
 
     try {
-        /////Sorry for this code, but CORS made me do it -> right implementation uses /router.use(authMiddleware)/;
-        var userId;
-        const tokenBody = req.headers.authorization.split(' ');
-        const [scheme, token] = tokenBody;
-        jwt.verify(token, authConfig.secret, (err, decoded) => {
-            if (err) {
-                res.status(401).send({ error: 'Invalid token' });
-            }
-            userId = decoded.id;
-        })
-        ///////
-
         await Habit.findByIdAndDelete(req.params.habitId);
 
-        const habitsOverallPercentage = await FindHabitsSetUserOverallPercentageAndUpdate(userId);
+        const habitsOverallPercentage = await FindHabitsSetUserOverallPercentageAndUpdate(req.userId);
 
         return res.send({ habitsOverallPercentage });
 
@@ -142,18 +92,6 @@ router.post('/habitperformed', async (req, res) => {
 
     try {
 
-        /////Sorry for this code, but CORS made me do it -> right implementation uses /router.use(authMiddleware)/;
-        var userId;
-        const tokenBody = req.headers.authorization.split(' ');
-        const [scheme, token] = tokenBody;
-        jwt.verify(token, authConfig.secret, (err, decoded) => {
-            if (err) {
-                res.status(401).send({ error: 'Invalid token' });
-            }
-            userId = decoded.id;
-        })
-        ///////
-
         const habit = await Habit.findById(req.body.id);
 
         // percentage history is supposed to have yesterday as the last day stored
@@ -164,7 +102,7 @@ router.post('/habitperformed', async (req, res) => {
 
         await Habit.updateOne({ _id: habit._id }, habit);
 
-        const habitsOverallPercentage = await FindHabitsSetUserOverallPercentageAndUpdate(userId);
+        const habitsOverallPercentage = await FindHabitsSetUserOverallPercentageAndUpdate(req.userId);
 
         return res.send({ habit, habitsOverallPercentage });
 

@@ -21,6 +21,7 @@
       <div v-else>
         <b-container>
           <b-row class="mt-5">
+            <!--Start User Info Section-->
             <b-col md="3" class="mb-4">
               <div class="card">
                 <div class="card-body p-0">
@@ -36,7 +37,8 @@
                 </div>
               </div>
             </b-col>
-
+            <!--End User Info Section-->
+            <!--Start Habits Section-->
             <b-col md="9">
               <div class="overflow-auto">
                 <div class="text-right mb-4">
@@ -47,6 +49,7 @@
                 </div>
 
                 <div v-if="renderHabits">
+                  <!--Start Habits Info Section-->
                   <ul class="list-group">
                     <li
                       v-for="(habit, index) in habits"
@@ -69,10 +72,13 @@
                               </button>
                             </b-col>
                             <b-col cols="5">
-                              <button
-                                class="btn btn-sm btn-success m-1"
-                                @click="performHabitToday(index)"
-                              >{{habit.reminderMessage}}</button>
+                              <p class="text-theme">{{habit.reminderMessage}}</p>
+                              <div class="text-center">                                
+                                <button
+                                  class="btn btn-sm btn-success m-1"
+                                  @click="performHabitToday(index)"
+                                >Performed Today</button>
+                              </div>
                             </b-col>
                             <b-col cols="3">
                               <button
@@ -96,10 +102,16 @@
                         <transition name="slide">
                           <div class="m-1" v-show="isShow[index].x">
                             <area-chart
-                              :data="[[habit.percentageHistory[18].date, habit.percentageHistory[18].percentage], [habit.percentageHistory[19].date, habit.percentageHistory[19].percentage], [habit.percentageHistory[20].date, habit.percentageHistory[20].percentage],
-                          [habit.percentageHistory[21].date, habit.percentageHistory[21].percentage], [habit.percentageHistory[22].date, habit.percentageHistory[22].percentage], [habit.percentageHistory[23].date, habit.percentageHistory[23].percentage],
-                          [habit.percentageHistory[24].date, habit.percentageHistory[24].percentage], [habit.percentageHistory[25].date, habit.percentageHistory[25].percentage], [habit.percentageHistory[26].date, habit.percentageHistory[26].percentage],
-                           [habit.percentageHistory[27].date, habit.percentageHistory[27].percentage], [habit.percentageHistory[28].date, habit.percentageHistory[28].percentage], [habit.percentageHistory[29].date, habit.percentageHistory[29].percentage]]"
+                              :data="[[habit.percentageHistory[0].date, habit.percentageHistory[0].percentage], [habit.percentageHistory[1].date, habit.percentageHistory[1].percentage], [habit.percentageHistory[2].date, habit.percentageHistory[2].percentage],
+                              [habit.percentageHistory[3].date, habit.percentageHistory[3].percentage], [habit.percentageHistory[4].date, habit.percentageHistory[4].percentage], [habit.percentageHistory[5].date, habit.percentageHistory[5].percentage],
+                              [habit.percentageHistory[6].date, habit.percentageHistory[6].percentage], [habit.percentageHistory[7].date, habit.percentageHistory[7].percentage], [habit.percentageHistory[8].date, habit.percentageHistory[8].percentage],
+                              [habit.percentageHistory[9].date, habit.percentageHistory[9].percentage], [habit.percentageHistory[10].date, habit.percentageHistory[10].percentage], [habit.percentageHistory[11].date, habit.percentageHistory[11].percentage],
+                              [habit.percentageHistory[12].date, habit.percentageHistory[12].percentage], [habit.percentageHistory[13].date, habit.percentageHistory[13].percentage], [habit.percentageHistory[14].date, habit.percentageHistory[14].percentage],
+                              [habit.percentageHistory[15].date, habit.percentageHistory[15].percentage], [habit.percentageHistory[16].date, habit.percentageHistory[16].percentage], [habit.percentageHistory[17].date, habit.percentageHistory[17].percentage],
+                              [habit.percentageHistory[18].date, habit.percentageHistory[18].percentage], [habit.percentageHistory[19].date, habit.percentageHistory[19].percentage], [habit.percentageHistory[20].date, habit.percentageHistory[20].percentage],
+                              [habit.percentageHistory[21].date, habit.percentageHistory[21].percentage], [habit.percentageHistory[22].date, habit.percentageHistory[22].percentage], [habit.percentageHistory[23].date, habit.percentageHistory[23].percentage],
+                              [habit.percentageHistory[24].date, habit.percentageHistory[24].percentage], [habit.percentageHistory[25].date, habit.percentageHistory[25].percentage], [habit.percentageHistory[26].date, habit.percentageHistory[26].percentage],
+                              [habit.percentageHistory[27].date, habit.percentageHistory[27].percentage], [habit.percentageHistory[28].date, habit.percentageHistory[28].percentage], [habit.percentageHistory[29].date, habit.percentageHistory[29].percentage]]"
                               width="100%"
                               height="150px"
                               :min="0"
@@ -111,9 +123,11 @@
                       </div>
                     </li>
                   </ul>
+                  <!--End Habits Info Section-->
                 </div>
               </div>
             </b-col>
+            <!--End Habits Section-->
           </b-row>
         </b-container>
       </div>
@@ -123,45 +137,46 @@
     <b-modal id="modal-update-user" hide-footer>
       <template>
         <div class="text-theme font-weight-bold">Update Profile Image</div>
-        <br>
+        <br />
         <form @submit.prevent="uploadProfilePhoto()">
-        <b-form-file class="mb-3"
-          v-model="selectedProfileImage"
-          :state="Boolean(file)"
-          placeholder="Choose a image or drop it here..."
-          drop-placeholder="Drop image here..."
-        ></b-form-file>
-        <div class="mb-3" v-if="selectedProfileImage">
-          <button class="btn btn-success btn-md w-100">Update</button>
-        </div>              
+          <b-form-file
+            class="mb-3"
+            v-model="selectedProfileImage"
+            :state="Boolean(selectedProfileImage)"
+            placeholder="Choose a image or drop it here..."
+            drop-placeholder="Drop image here..."
+          ></b-form-file>
+          <div class="mb-3" v-if="selectedProfileImage">
+            <button class="btn btn-success btn-md w-100">Update</button>
+          </div>
         </form>
         <div v-if="user.profilePhoto.name !== 'default-user'">
           <button class="btn btn-danger btn-md w-100" @click="deleteProfilePhoto()">Delete</button>
-        </div>  
+        </div>
       </template>
       <template>
         <div>
-        <div class="text-theme font-weight-bold mt-3">Update Password</div>
-        <br>
-        <form @submit.prevent="updateUser()">
-          <div class="form-group">
-            <input
-              required
-              type="password"
-              class="form-control"
-              placeholder="New Password"
-              v-model="userForm.password"
-            />
-          </div>         
-          <button class="btn btn-success btn-md w-100">Update</button>
-        </form>
-      </div>
+          <div class="text-theme font-weight-bold mt-3">Update Password</div>
+          <br />
+          <form @submit.prevent="updateUser()">
+            <div class="form-group">
+              <input
+                required
+                type="password"
+                class="form-control"
+                placeholder="New Password"
+                v-model="userForm.password"
+              />
+            </div>
+            <button class="btn btn-success btn-md w-100">Update</button>
+          </form>
+        </div>
       </template>
       <div>
         <div class="text-theme font-weight-bold mt-3 mb-3">Delete Account</div>
         <button class="btn btn-danger btn-md w-100" @click="deleteUser()">Delete Account</button>
       </div>
-      
+
       <div class="text-right">
         <b-button class="mt-2" variant="info" @click="$bvModal.hide('modal-update-user')">Cancel</b-button>
       </div>
@@ -273,7 +288,7 @@ export default {
         key: "default-user",
         url: "http://localhost:8080/images/default-user.png"
       },
-      habitsOverallPercentage: 0,
+      habitsOverallPercentage: "",
       _id: "",
       email: "",
       name: "",
@@ -317,6 +332,7 @@ export default {
     try {
       await resource.getAllHabits().then(res => {
         this.user = res.body.user;
+        this.user.habitsOverallPercentage = this.user.habitsOverallPercentage.toFixed(2);
         if (Array.isArray(res.body.habits) && res.body.habits.length) {
           this.habits = res.body.habits;
           this.renderHabits = true;
@@ -339,7 +355,7 @@ export default {
         await this.ActionSignOut();
         this.$router.go();
       } catch (err) {
-        console.log(err);        
+        console.log(err);
       }
     },
     updateCurrenteHabit(index) {
@@ -433,7 +449,7 @@ export default {
       try {
         await resource.updateUser(this.userForm).then(res => {
           this.user = res.body.user;
-          this.$bvModal.hide('modal-update-user');
+          this.$bvModal.hide("modal-update-user");
         });
       } catch (err) {
         alert(err.body.error ? err.body.error : "Unexpected Error");
@@ -452,7 +468,6 @@ export default {
   }
 };
 </script>
-
 
 <style>
 body {

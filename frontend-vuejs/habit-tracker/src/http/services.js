@@ -12,5 +12,4 @@ export default {
     deleteProfilePhoto: {method: 'delete', url: `${baseURL}users/profilephoto`},
     updateUser: {method: 'put', url: `${baseURL}users`},
     deleteUser: {method: 'delete', url: `${baseURL}users`}
-
 }
