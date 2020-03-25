@@ -2,7 +2,7 @@
 
 ## Descrição
 
-Projeto de uma aplicação WEB que busca imitar um habit tracker. A aplicação realiza operações de CRUD com as entidades Usuário(user) e Hábito(habit) e calcula o progresso do usuário em relação aos seus hábitos
+Projeto de uma aplicação WEB que busca imitar um aplicativo habit tracker. A aplicação realiza operações CRUD com as entidades Usuário(user) e Hábito(habit) e calcula o progresso do usuário em relação aos seus hábitos
 (O cálculo é descrito na ultima sessão do README.md). O sistema também conta com autenticação de usuário por JWT.
 
 O backend foi desenvolvido com banco de dados MongoDB e Node.js, e consiste em uma API REST,
@@ -10,7 +10,7 @@ já o frontend da aplicação foi desenvolvido com Vue.js.
 
 ## Como executar:
 
-1ª - Certifique-se que possui MongoDB instalado e o inicialize.
+1ª - Certifique-se que possui o MongoDB instalado e o inicialize.
 <br>
 <b>No Windows:</b>
 ```
@@ -78,9 +78,9 @@ A aplicação considera que todos os hábitos são diários.
 
 Sempre que o usuário realiza o hábito a porcentagem do hábito é acrescida de 5% até atingir o limite de 100%.
 
-Caso o usuário fique um ou mais dias sem realizar o hábito (informar à aplicação) a seguinte equação é utilizada para calcular a perda:
+Caso o usuário fique um ou mais dias sem realizar o hábito (informar a aplicação) a seguinte equação é utilizada para calcular a perda:
 
-<b>(Perda Base) = (100 - (5 * máximo de dias consecutivos realizando o hábito))<br>
+<b>(Perda Base) = (100 - (5 * Máximo de dias consecutivos realizando o hábito))<br>
 (Perda Base) = (Perda Base) < 1 ? 1 : (Perda Base)<br>
 (Perda no dia) = (Perda Base)*(Dias consecutivos não realizando o hábito)<br>
 (Porcentagem atual) = ((Porcentagem atual)-(Perda no dia)) < 0 ? 0 : ((Porcentagem atual)-(Perda no dia))</b>
