@@ -122,7 +122,7 @@
     <!--Start Update User Modal-->
     <b-modal id="modal-update-user" hide-footer>
       <template>
-        <div class="text-theme font-weight-bold">Update Profile Photo</div>
+        <div class="text-theme font-weight-bold">Update Profile Image</div>
         <br>
         <form @submit.prevent="uploadProfilePhoto()">
         <b-form-file class="mb-3"
@@ -139,8 +139,9 @@
           <button class="btn btn-danger btn-md w-100" @click="deleteProfilePhoto()">Delete</button>
         </div>  
       </template>
-      <div class="d-block text-center">
-        <div class="text-theme font-weight-bold mt-3">Update Profile Photo</div>
+      <template>
+        <div>
+        <div class="text-theme font-weight-bold mt-3">Update Password</div>
         <br>
         <form @submit.prevent="updateUser()">
           <div class="form-group">
@@ -155,6 +156,12 @@
           <button class="btn btn-success btn-md w-100">Update</button>
         </form>
       </div>
+      </template>
+      <div>
+        <div class="text-theme font-weight-bold mt-3 mb-3">Delete Account</div>
+        <button class="btn btn-danger btn-md w-100" @click="deleteUser()">Delete Account</button>
+      </div>
+      
       <div class="text-right">
         <b-button class="mt-2" variant="info" @click="$bvModal.hide('modal-update-user')">Cancel</b-button>
       </div>
@@ -330,10 +337,9 @@ export default {
     async signOut() {
       try {
         await this.ActionSignOut();
-        await this.$router.push({ name: "Home" });
-      } catch (err) {
-        console.log(err);
         this.$router.go();
+      } catch (err) {
+        console.log(err);        
       }
     },
     updateCurrenteHabit(index) {
