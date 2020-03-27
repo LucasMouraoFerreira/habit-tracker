@@ -3,7 +3,7 @@
 ## Descrição
 
 Projeto de uma aplicação WEB que busca imitar um aplicativo habit tracker. A aplicação realiza operações CRUD com as entidades Usuário(user) e Hábito(habit) e calcula o progresso do usuário em relação aos seus hábitos
-(O cálculo é descrito na ultima sessão do README.md). O sistema também conta com autenticação de usuário por JWT.
+(O cálculo é descrito na ultima seção do README.md). O sistema também conta com autenticação de usuário por JWT.
 
 O backend foi desenvolvido com banco de dados MongoDB e Node.js, e consiste em uma API REST,
 já o frontend da aplicação foi desenvolvido com Vue.js.
