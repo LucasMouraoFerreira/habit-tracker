@@ -172,7 +172,7 @@ function verifyDaysPastSinceLastLogin(habit) {
 function calculateLoss(habit) {
     var daysNotP = habit.consecutiveDaysNotPerforming;
     var baseLossPercentage = (100 - (habit.maxConsecutiveDaysPerforming * 5)); //takes 20 days to build a powerful habit :3
-    if (baseLossPercentage < 1) baseLossPercentage;
+    if (baseLossPercentage < 1) baseLossPercentage = 1;
     var newPercentage = (habit.currentPercentage - (daysNotP * baseLossPercentage));
     if (newPercentage < 0) newPercentage = 0;
 
