@@ -166,6 +166,7 @@ function verifyDaysPastSinceLastLogin(habit) {
             }
             habit.percentageHistory.push(Obj);
         }
+        habit.currentPercentage = habit.percentageHistory[29].percentage;
     }
 }
 

@@ -28,7 +28,7 @@
                   <div class="text-center text-theme mb-2 mt-2 profile p-0">
                     <img :src="user.profilePhoto.url" alt="profile photo" />
                     <h5 class="mt-1 font-weight-bold">Welcome {{user.name}}!</h5>
-                    <h4 class="font-weight-bold text-success">{{user.habitsOverallPercentage}}%</h4>
+                    <h4 class="font-weight-bold text-success">{{user.habitsOverallPercentage.toFixed(2)}}%</h4>
                     <br />
                     <b-button variant="primary" @click="$bvModal.show('modal-update-user')">
                       <font-awesome-icon :icon="['fas', 'user-edit']" />
@@ -332,7 +332,6 @@ export default {
     try {
       await resource.getAllHabits().then(res => {
         this.user = res.body.user;
-        this.user.habitsOverallPercentage = this.user.habitsOverallPercentage.toFixed(2);
         if (Array.isArray(res.body.habits) && res.body.habits.length) {
           this.habits = res.body.habits;
           this.renderHabits = true;
