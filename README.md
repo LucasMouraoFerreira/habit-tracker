@@ -29,12 +29,13 @@ npm install
 ```
 npm run start
 ```
-3 ª - Na pasta frontend-vuejs/habit-tracker, execute os comandos:
+3ª - Na pasta frontend-vuejs/habit-tracker, execute o comando:
 ```
 npm install
 ```
+4ª - Na pasta frontend-vuejs/habit-tracker/src, execute o comando:
 ```
-npm run serve
+vue serve
 ```
 
 ## Tecnologias Utilizadas:
